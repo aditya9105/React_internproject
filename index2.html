@@ -30,64 +30,54 @@
 
 <script type="module" src="script.js"></script>
 
-<!-- React & Babel -->
-<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
 <!-- AG Grid UMD -->
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.noStyle.umd.js"></script>
 
-<script type="text/babel">
-const { useEffect } = React;
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const gridDiv = document.querySelector('#myGrid');
 
-function App() {
-  useEffect(() => {
-    const gridDiv = document.querySelector('#myGrid');
+  if (!window.listenToFirebase) {
+    console.error("❌ listenToFirebase is not defined!");
+    return;
+  }
 
-    if (!window.listenToFirebase) {
-      console.error("❌ listenToFirebase is not defined!");
-      return;
-    }
+  window.listenToFirebase((entries) => {
+    const columnDefs = [
+      { headerName: "First Name", field: "name", sortable: true, filter: true },
+      { headerName: "Last Name", field: "lastName", sortable: true, filter: true },
+      { headerName: "Email", field: "email", sortable: true, filter: true },
+      { headerName: "Mobile", field: "mobile", sortable: true, filter: true },
+      { headerName: "Company", field: "company", sortable: true, filter: true },
+      { headerName: "DOB", field: "dob", sortable: true, filter: true },
+      { headerName: "Gender", field: "gender", sortable: true, filter: true },
+      { headerName: "Image", field: "selectedImage", cellRenderer: (params) => {
+          return `<img src="${params.value}" style="width:40px;height:40px;object-fit:cover;">`
+      }},
+      { headerName: "Actions", cellRenderer: (params) => {
+          return `
+            <a href="index.html?id=${params.data.id}" class="btn btn-sm btn-primary">Update</a>
+            <button class="btn btn-sm btn-danger" onclick="confirmAndDelete('${params.data.id}')">Delete</button>
+          `;
+      }}
+    ];
 
-    window.listenToFirebase((entries) => {
-      const columnDefs = [
-        { headerName: "First Name", field: "name", sortable: true, filter: true },
-        { headerName: "Last Name", field: "lastName", sortable: true, filter: true },
-        { headerName: "Email", field: "email", sortable: true, filter: true },
-        { headerName: "Mobile", field: "mobile", sortable: true, filter: true },
-        { headerName: "Company", field: "company", sortable: true, filter: true },
-        { headerName: "DOB", field: "dob", sortable: true, filter: true },
-        { headerName: "Gender", field: "gender", sortable: true, filter: true },
-        { headerName: "Image", field: "selectedImage", cellRenderer: (params) => {
-            return `<img src="${params.value}" style="width:40px;height:40px;object-fit:cover;">`
-        }},
-        { headerName: "Actions", cellRenderer: (params) => {
-            return `
-              <a href="index.html?id=${params.data.id}" class="btn btn-sm btn-primary">Update</a>
-              <button class="btn btn-sm btn-danger" onclick="confirmAndDelete('${params.data.id}')">Delete</button>
-            `;
-        }}
-      ];
+    const gridOptions = {
+      columnDefs,
+      rowData: entries,
+      defaultColDef: {
+        resizable: true,
+        sortable: true,
+        filter: true
+      },
+      onGridReady: () => {
+        gridDiv.style.visibility = 'visible';
+      }
+    };
 
-      const gridOptions = {
-        columnDefs,
-        rowData: entries,
-        defaultColDef: {
-          resizable: true,
-          sortable: true,
-          filter: true
-        }
-      };
-
-      new agGrid.Grid(gridDiv, gridOptions);
-    });
-  }, []);
-
-  return null;
-}
-
-ReactDOM.render(<App />, document.getElementById("myGrid"));
+    new agGrid.Grid(gridDiv, gridOptions);
+  });
+});
 </script>
 </body>
 </html>
