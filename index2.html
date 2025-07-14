@@ -5,78 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>View Database</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- AG Grid styles -->
-<link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" rel="stylesheet">
-
-<style>
-#myGrid {
-  margin-top: 20px;
-  height: 600px;
-  width: 100%;
-}
-</style>
 </head>
 
 <body>
-<div class="container mt-4">
-  <a href="index.html" target="_self" class="btn btn-primary mb-3">⬅ Back to Main Page</a>
+<div class="container mt-5">
+<h2>Saved Entries</h2>
+
+<div class="mb-3">
+<a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
 </div>
 
-<div class="container">
-  <div id="myGrid" class="ag-theme-alpine"></div>
+<table class="table table-bordered">
+<thead>
+<tr>
+<th>First Name</th>
+<th>Last Name</th>
+<th>Email</th>
+<th>Mobile</th>
+<th>Company</th>
+<th>Date of Birth</th>
+<th>Gender</th>
+<th>Image</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="dataTableBody"></tbody>
+</table>
 </div>
 
 <script type="module" src="script.js"></script>
-
-<!-- AG Grid UMD -->
-<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.noStyle.umd.js"></script>
-
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const gridDiv = document.querySelector('#myGrid');
-
-  if (!window.listenToFirebase) {
-    console.error("❌ listenToFirebase is not defined!");
-    return;
+window.addEventListener("DOMContentLoaded", () => {
+  if (window.listenToFirebase) {
+    window.listenToFirebase(window.renderTableRows);
   }
-
-  window.listenToFirebase((entries) => {
-    const columnDefs = [
-      { headerName: "First Name", field: "name", sortable: true, filter: true },
-      { headerName: "Last Name", field: "lastName", sortable: true, filter: true },
-      { headerName: "Email", field: "email", sortable: true, filter: true },
-      { headerName: "Mobile", field: "mobile", sortable: true, filter: true },
-      { headerName: "Company", field: "company", sortable: true, filter: true },
-      { headerName: "DOB", field: "dob", sortable: true, filter: true },
-      { headerName: "Gender", field: "gender", sortable: true, filter: true },
-      { headerName: "Image", field: "selectedImage", cellRenderer: (params) => {
-          return `<img src="${params.value}" style="width:40px;height:40px;object-fit:cover;">`
-      }},
-      { headerName: "Actions", cellRenderer: (params) => {
-          return `
-            <a href="index.html?id=${params.data.id}" class="btn btn-sm btn-primary">Update</a>
-            <button class="btn btn-sm btn-danger" onclick="confirmAndDelete('${params.data.id}')">Delete</button>
-          `;
-      }}
-    ];
-
-    const gridOptions = {
-      columnDefs,
-      rowData: entries,
-      defaultColDef: {
-        resizable: true,
-        sortable: true,
-        filter: true
-      },
-      onGridReady: () => {
-        gridDiv.style.visibility = 'visible';
-      }
-    };
-
-    new agGrid.Grid(gridDiv, gridOptions);
-  });
 });
 </script>
 </body>
