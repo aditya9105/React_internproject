@@ -10,12 +10,6 @@
 <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" rel="stylesheet">
 
-<!-- React -->
-<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-<script type="module" src="script.js"></script>
-
 <style>
 #root {
   margin-top: 20px;
@@ -29,17 +23,25 @@
 </div>
 
 <div class="container">
-  <div id="root"></div>
+  <div id="myGrid" class="ag-theme-alpine" style="height: 600px; width: 100%;"></div>
 </div>
 
+<script type="module" src="script.js"></script>
+
+<!-- React & Babel -->
+<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+<!-- AG Grid -->
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.noStyle.js"></script>
+
 <script type="text/babel">
-const { useEffect, useRef } = React;
+const { useEffect } = React;
 
-function DataGridComponent() {
-  const gridRef = useRef();
-
+function App() {
   useEffect(() => {
-    if (!window.listenToFirebase) return;
+    const gridDiv = document.querySelector('#myGrid');
 
     window.listenToFirebase((entries) => {
       const columnDefs = [
@@ -50,11 +52,15 @@ function DataGridComponent() {
         { headerName: "Company", field: "company", sortable: true, filter: true },
         { headerName: "DOB", field: "dob", sortable: true, filter: true },
         { headerName: "Gender", field: "gender", sortable: true, filter: true },
-        { headerName: "Image", field: "selectedImage", cellRenderer: (params) => `<img src="${params.value}" style="width:40px;height:40px;object-fit:cover;">` },
-        { headerName: "Actions", cellRenderer: (params) => `
-          <a href="index.html?id=${params.data.id}" class="btn btn-sm btn-primary">Update</a>
-          <button class="btn btn-sm btn-danger" onclick="confirmAndDelete('${params.data.id}')">Delete</button>
-        ` }
+        { headerName: "Image", field: "selectedImage", cellRenderer: (params) => {
+            return `<img src="${params.value}" style="width:40px;height:40px;object-fit:cover;">`
+        }},
+        { headerName: "Actions", cellRenderer: (params) => {
+            return `
+              <a href="index.html?id=${params.data.id}" class="btn btn-sm btn-primary">Update</a>
+              <button class="btn btn-sm btn-danger" onclick="confirmAndDelete('${params.data.id}')">Delete</button>
+            `;
+        }}
       ];
 
       const gridOptions = {
@@ -67,19 +73,14 @@ function DataGridComponent() {
         }
       };
 
-      new agGrid.Grid(gridRef.current, gridOptions);
+      new agGrid.Grid(gridDiv, gridOptions);
     });
   }, []);
 
-  return (
-    <div className="ag-theme-alpine" style={{height: '600px', width: '100%'}} ref={gridRef}></div>
-  );
+  return null;
 }
 
-ReactDOM.render(<DataGridComponent />, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById("myGrid"));
 </script>
-
-<!-- AG Grid JS -->
-<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.noStyle.js"></script>
 </body>
 </html>
