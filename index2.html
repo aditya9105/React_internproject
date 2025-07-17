@@ -39,7 +39,7 @@
   <div class="d-flex justify-content-between mb-2">
     <input type="text" id="searchInput" class="form-control w-25" placeholder="🔍 Search...">
     <div>
-      <button id="toggleDeleteMode" class="btn btn-warning btn-sm">🗑️ Enable Delete Mode</button>
+      <button id="toggleDeleteMode" class="btn btn-warning btn-sm">🗑 Enable Delete Mode</button>
       <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
     </div>
   </div>
@@ -148,8 +148,8 @@ $(document).ready(function () {
       row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
       row.append(`
         <td>
-          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">📝</a>
-          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">✖️</button>
+          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
         </td>
       `);
       tbody.append(row);
