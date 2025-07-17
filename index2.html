@@ -94,19 +94,7 @@
 
 <script>
 $(document).ready(function () {
-  let deleteMode = false;
-
-  $("#entryTable").tablesorter({
-    theme: "bootstrap",
-    widgets: ["zebra", "stickyHeaders", "pager"],
-    widgetOptions: {
-      stickyHeaders: '',
-      pager_size: 20,
-      pager_selectors: { container: '.pager' },
-      pager_output: '{startRow} – {endRow} / {totalRows} rows',
-      pager_sizeOptions: [20, 50, 100]
-    }
-  });
+ 
 
   $("#searchInput").on("keyup", function () {
     const query = $(this).val().toLowerCase();
@@ -117,33 +105,7 @@ $(document).ready(function () {
     });
   });
 
-  $("#toggleDeleteMode").on("click", function () {
-    deleteMode = !deleteMode;
-    $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
-    $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
-  });
-
-  // 🔷 FINAL: Silent Delete & Auto-Refresh
-  $("#deleteSelected").on("click", function () {
-    const ids = [];
-    $(".row-check:checked").each(function () {
-      ids.push($(this).data("id"));
-    });
-
-    if (ids.length === 0) {
-      return;  // nothing selected, just exit
-    }
-
-    ids.forEach(id => {
-      window.confirmAndDelete(id);
-    });
-
-    setTimeout(() => {
-      location.reload();
-    }, 1000);
-  });
-
+ 
   window.listenToFirebase(entries => {
     const tbody = $("#entryTable tbody");
     tbody.empty();
