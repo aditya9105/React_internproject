@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>React Table with Firebase</title>
+  <title>Saved Entries - TableSorter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- TableSorter -->
+  <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+
   <style>
-    .sort-icons {
-      font-size: 0.75rem;
-      margin-left: 5px;
-      color: #ccc;
-    }
-    th.sorted-asc .sort-icons .up {
-      color: #000;
-      font-weight: bold;
-    }
-    th.sorted-desc .sort-icons .down {
-      color: #000;
-      font-weight: bold;
+    .img-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -30,183 +31,77 @@
     <div class="mb-3 d-flex justify-content-end">
       <input type="text" id="searchInput" class="form-control w-25" placeholder="🔍 Search..." />
     </div>
-    <div id="root"></div>
+
+    <table id="entryTable" class="table table-bordered tablesorter">
+      <thead class="thead-dark">
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Mobile</th>
+          <th>Company</th>
+          <th>DOB</th>
+          <th>Gender</th>
+          <th>Image</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-
-  <!-- React, ReactDOM -->
-  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.development.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.development.js"></script>
-
-  <!-- Babel for JSX -->
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
-
-  <!-- react-table -->
-  <script src="https://cdn.jsdelivr.net/npm/react-table@7.8.0/dist/react-table.development.js"></script>
 
   <!-- Firebase logic -->
   <script type="module" src="script.js"></script>
 
-  <!-- Main React App -->
-  <script type="text/babel">
-    const { useTable, usePagination, useSortBy } = ReactTable;
+  <script>
+    function populateTable(entries) {
+      const tbody = $("#entryTable tbody");
+      tbody.empty();
 
-    function Table({ columns, data }) {
-      const [searchText, setSearchText] = React.useState("");
-      const [sortByState, setSortByState] = React.useState([]);
+      entries.forEach(entry => {
+        const row = $("<tr>");
+        row.append($("<td>").text(entry.name));
+        row.append($("<td>").text(entry.lastName));
+        row.append($("<td>").text(entry.email));
+        row.append($("<td>").text(entry.mobile));
+        row.append($("<td>").text(entry.company));
+        row.append($("<td>").text(entry.dob));
+        row.append($("<td>").text(entry.gender));
+        row.append($("<td>").html(`<img src="${entry.selectedImage}" class="img-thumb" />`));
+        row.append($("<td>").html(`
+          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1">Update</a>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')">Delete</button>
+        `));
+        tbody.append(row);
+      });
 
-      const filteredData = React.useMemo(() => {
-        if (!searchText.trim()) return data;
-        return data.filter(entry =>
-          Object.values(entry).some(value =>
-            String(value).toLowerCase().includes(searchText.toLowerCase())
-          )
-        );
-      }, [data, searchText]);
+      $("#entryTable").trigger("update"); // Refresh tablesorter
+    }
 
-      const sortedData = React.useMemo(() => {
-        if (sortByState.length === 0) return filteredData;
-        const [{ id, desc }] = sortByState;
+    $(document).ready(function () {
+      $("#entryTable").tablesorter({
+        theme: "bootstrap",
+        widgets: ["zebra", "stickyHeaders", "filter"],
+        widgetOptions: {
+          stickyHeaders: '',
+          filter_columnFilters: true,
+          filter_placeholder: { search: '🔍' },
+          filter_saveFilters: true
+        }
+      });
 
-        return [...filteredData].sort((a, b) => {
-          let aVal = a[id];
-          let bVal = b[id];
-
-          if (typeof aVal === 'string') aVal = aVal.toLowerCase();
-          if (typeof bVal === 'string') bVal = bVal.toLowerCase();
-
-          if (aVal < bVal) return desc ? 1 : -1;
-          if (aVal > bVal) return desc ? -1 : 1;
-          return 0;
+      $("#searchInput").on("keyup", function () {
+        const query = $(this).val().toLowerCase();
+        $("#entryTable tbody tr").each(function () {
+          const row = $(this);
+          const match = row.text().toLowerCase().includes(query);
+          row.toggle(match);
         });
-      }, [filteredData, sortByState]);
+      });
 
-      const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        prepareRow,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        state: { sortBy }
-      } = useTable(
-        {
-          columns,
-          data: sortedData,
-          initialState: { pageSize: 5, sortBy: [] },
-          manualSortBy: true // Important to override react-table's auto sort
-        },
-        useSortBy,
-        usePagination
-      );
-
-      // Keep track of sorting column/direction manually
-      React.useEffect(() => {
-        setSortByState(sortBy);
-      }, [sortBy]);
-
-      React.useEffect(() => {
-        const input = document.getElementById("searchInput");
-        const handler = e => setSearchText(e.target.value);
-        input.addEventListener("input", handler);
-        return () => input.removeEventListener("input", handler);
-      }, []);
-
-      return (
-        <>
-          <table {...getTableProps()} className="table table-bordered">
-            <thead>
-              {headerGroups.map(headerGroup => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map(column => {
-                    const isSorted = column.isSorted;
-                    const isDesc = column.isSortedDesc;
-                    return (
-                      <th
-                        {...column.getHeaderProps(column.getSortByToggleProps())}
-                        className={
-                          isSorted ? (isDesc ? 'sorted-desc' : 'sorted-asc') : ''
-                        }
-                      >
-                        {column.render('Header')}
-                        {!column.disableSortBy && (
-                          <span className="sort-icons">
-                            <span className="up">↑</span>
-                            <span className="down">↓</span>
-                          </span>
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-              {page.map(row => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map(cell => (
-                      <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-
-          <div className="d-flex justify-content-between">
-            <button className="btn btn-secondary" onClick={() => previousPage()} disabled={!canPreviousPage}>
-              Previous
-            </button>
-            <button className="btn btn-secondary" onClick={() => nextPage()} disabled={!canNextPage}>
-              Next
-            </button>
-          </div>
-        </>
-      );
-    }
-
-    const columns = [
-      { Header: 'First Name', accessor: 'name' },
-      { Header: 'Last Name', accessor: 'lastName' },
-      { Header: 'Email', accessor: 'email' },
-      { Header: 'Mobile', accessor: 'mobile' },
-      { Header: 'Company', accessor: 'company' },
-      { Header: 'Date of Birth', accessor: 'dob' },
-      { Header: 'Gender', accessor: 'gender' },
-      {
-        Header: 'Image',
-        accessor: 'selectedImage',
-        disableSortBy: true,
-        Cell: ({ value }) =>
-          value ? <img src={value} alt="User" style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> : ''
-      },
-      {
-        Header: 'Actions',
-        disableSortBy: true,
-        Cell: ({ row }) => (
-          <>
-            <a href={`index.html?id=${row.original.id}`} className="btn btn-sm btn-primary mr-2">Update</a>
-            <button className="btn btn-sm btn-danger" onClick={() => window.confirmAndDelete(row.original.id)}>Delete</button>
-          </>
-        )
-      }
-    ];
-
-    function App() {
-      const [data, setData] = React.useState([]);
-
-      React.useEffect(() => {
-        window.listenToFirebase(entries => setData(entries));
-      }, []);
-
-      return <Table columns={columns} data={data} />;
-    }
-
-    ReactDOM.render(<App />, document.getElementById("root"));
+      // Realtime Firebase updates
+      window.listenToFirebase(populateTable);
+    });
   </script>
 </body>
 </html>
