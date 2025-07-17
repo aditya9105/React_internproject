@@ -26,6 +26,18 @@
   .compact-table td, .compact-table th {
     padding: 0.2rem;
   }
+   .custom-charcoal {
+  background-color: #3b3f44; /* charcoal: between gray and black */
+  color: #ffffff !important;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.custom-charcoal:hover,
+.custom-charcoal:focus {
+  background-color: #2f3338; /* slightly darker hover */
+  color: #ffffff !important;
+}
 </style>
 </head>
 <body>
@@ -38,10 +50,10 @@
 
   <div class="d-flex justify-content-between mb-2">
     <input type="text" id="searchInput" class="form-control w-25" placeholder="🔍 Search...">
-    <div>
-      <button id="toggleDeleteMode" class="btn btn-warning btn-sm">🗑 Enable Delete Mode</button>
-      <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
-    </div>
+   <div>
+  <button id="toggleDeleteMode" class="btn btn-sm custom-charcoal">Enable Delete Mode</button>
+  <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
+</div>
   </div>
 
   <div class="table-responsive">
