@@ -1,40 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Saved Entries - TableSorter</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<meta charset="UTF-8" />
+<title>Saved Entries - TableSorter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <!-- TableSorter -->
-  <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
-  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
-  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+<!-- TableSorter -->
+<link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+<script src="https://mottie.github.io/tablesorter/js/widgets/widget-pager.min.js"></script>
 
-  <style>
-    .img-thumb {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-    }
-  </style>
+<style>
+  .img-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+  }
+  .compact-table {
+    font-size: 10px;
+  }
+  .compact-table td, .compact-table th {
+    padding: 0.2rem;
+  }
+</style>
 </head>
 <body>
-  <div class="container mt-5">
-    <h2>Saved Entries</h2>
-    <div class="mb-3">
-      <a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
-    </div>
-    <div class="mb-3 d-flex justify-content-end">
-      <input type="text" id="searchInput" class="form-control w-25" placeholder="🔍 Search..." />
-    </div>
+<div class="container mt-4">
+  <h2>Saved Entries</h2>
 
-    <table id="entryTable" class="table table-bordered tablesorter">
+  <div class="mb-3">
+    <a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
+  </div>
+
+  <div class="d-flex justify-content-between mb-2">
+    <input type="text" id="searchInput" class="form-control w-25" placeholder="🔍 Search...">
+    <div>
+      <button id="toggleDeleteMode" class="btn btn-warning btn-sm">🗑️ Enable Delete Mode</button>
+      <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table id="entryTable" class="table table-bordered tablesorter compact-table">
       <thead class="thead-dark">
         <tr>
+          <th class="delete-col d-none">Select</th>
           <th>First Name</th>
           <th>Last Name</th>
           <th>Email</th>
@@ -50,58 +64,99 @@
     </table>
   </div>
 
-  <!-- Firebase logic -->
-  <script type="module" src="script.js"></script>
+  <div id="pager" class="pager mt-2">
+    <button class="btn btn-secondary btn-sm first">« First</button>
+    <button class="btn btn-secondary btn-sm prev">‹ Prev</button>
+    <span class="pagedisplay"></span>
+    <button class="btn btn-secondary btn-sm next">Next ›</button>
+    <button class="btn btn-secondary btn-sm last">Last »</button>
+    <select class="form-control form-control-sm pagesize" style="width: auto; display:inline-block;">
+      <option value="20" selected>20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+    </select>
+  </div>
+</div>
 
-  <script>
-    function populateTable(entries) {
-      const tbody = $("#entryTable tbody");
-      tbody.empty();
+<script type="module" src="script.js"></script>
 
-      entries.forEach(entry => {
-        const row = $("<tr>");
-        row.append($("<td>").text(entry.name));
-        row.append($("<td>").text(entry.lastName));
-        row.append($("<td>").text(entry.email));
-        row.append($("<td>").text(entry.mobile));
-        row.append($("<td>").text(entry.company));
-        row.append($("<td>").text(entry.dob));
-        row.append($("<td>").text(entry.gender));
-        row.append($("<td>").html(`<img src="${entry.selectedImage}" class="img-thumb" />`));
-        row.append($("<td>").html(`
-          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1">Update</a>
-          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')">Delete</button>
-        `));
-        tbody.append(row);
-      });
+<script>
+$(document).ready(function () {
+  let deleteMode = false;
 
-      $("#entryTable").trigger("update"); // Refresh tablesorter
+  $("#entryTable").tablesorter({
+    theme: "bootstrap",
+    widgets: ["zebra", "stickyHeaders", "pager"],
+    widgetOptions: {
+      stickyHeaders: '',
+      pager_size: 20,
+      pager_selectors: { container: '.pager' },
+      pager_output: '{startRow} – {endRow} / {totalRows} rows',
+      pager_sizeOptions: [20, 50, 100]
+    }
+  });
+
+  $("#searchInput").on("keyup", function () {
+    const query = $(this).val().toLowerCase();
+    $("#entryTable tbody tr").each(function () {
+      const row = $(this);
+      const match = row.text().toLowerCase().includes(query);
+      row.toggle(match);
+    });
+  });
+
+  $("#toggleDeleteMode").on("click", function () {
+    deleteMode = !deleteMode;
+    $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
+    $("#deleteSelected").toggleClass("d-none", !deleteMode);
+    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : "🗑️ Enable Delete Mode");
+  });
+
+  // 🔷 FINAL: Silent Delete & Auto-Refresh
+  $("#deleteSelected").on("click", function () {
+    const ids = [];
+    $(".row-check:checked").each(function () {
+      ids.push($(this).data("id"));
+    });
+
+    if (ids.length === 0) {
+      return;  // nothing selected, just exit
     }
 
-    $(document).ready(function () {
-      $("#entryTable").tablesorter({
-        theme: "bootstrap",
-        widgets: ["zebra", "stickyHeaders", "filter"],
-        widgetOptions: {
-          stickyHeaders: '',
-          filter_columnFilters: true,
-          filter_placeholder: { search: '🔍' },
-          filter_saveFilters: true
-        }
-      });
-
-      $("#searchInput").on("keyup", function () {
-        const query = $(this).val().toLowerCase();
-        $("#entryTable tbody tr").each(function () {
-          const row = $(this);
-          const match = row.text().toLowerCase().includes(query);
-          row.toggle(match);
-        });
-      });
-
-      // Realtime Firebase updates
-      window.listenToFirebase(populateTable);
+    ids.forEach(id => {
+      window.confirmAndDelete(id);
     });
-  </script>
+
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  });
+
+  window.listenToFirebase(entries => {
+    const tbody = $("#entryTable tbody");
+    tbody.empty();
+    entries.forEach(entry => {
+      const row = $("<tr>");
+      row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
+      row.append(`<td>${entry.name}</td>`);
+      row.append(`<td>${entry.lastName}</td>`);
+      row.append(`<td>${entry.email}</td>`);
+      row.append(`<td>${entry.mobile}</td>`);
+      row.append(`<td>${entry.company}</td>`);
+      row.append(`<td>${entry.dob}</td>`);
+      row.append(`<td>${entry.gender}</td>`);
+      row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
+      row.append(`
+        <td>
+          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">📝</a>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">✖️</button>
+        </td>
+      `);
+      tbody.append(row);
+    });
+    $("#entryTable").trigger("update");
+  });
+});
+</script>
 </body>
 </html>
