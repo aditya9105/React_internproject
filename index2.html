@@ -121,7 +121,7 @@ $(document).ready(function () {
     deleteMode = !deleteMode;
     $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
     $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : "🗑️ Enable Delete Mode");
+    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
   });
 
   // 🔷 FINAL: Silent Delete & Auto-Refresh
