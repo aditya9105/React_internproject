@@ -137,14 +137,28 @@ $(document).ready(function () {
 });
 
 
-  $("#searchInput").on("keyup", function () {
-    const query = $(this).val().toLowerCase();
-    const filtered = allEntries.filter(entry =>
-      Object.values(entry).join(" ").toLowerCase().includes(query)
-    );
-    currentPage = 1;
-    renderTablePage(filtered);
+ $("#searchInput").on("keyup", function () {
+  const query = $(this).val().toLowerCase();
+
+  const filtered = allEntries.filter(entry => {
+    // Build a searchable string excluding the `id`
+    const searchableText = [
+      entry.name,
+      entry.lastName,
+      entry.email,
+      entry.mobile,
+      entry.company,
+      entry.dob,
+      entry.gender
+    ].join(" ").toLowerCase();
+
+    return searchableText.includes(query);
   });
+
+  currentPage = 1;
+  renderTablePage(filtered);
+});
+
 
   $("#toggleDeleteMode").on("click", function () {
     deleteMode = !deleteMode;
