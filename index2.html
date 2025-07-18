@@ -33,6 +33,14 @@
       background-color: #2f3338;
       color: #ffffff !important;
     }
+
+    /* --- Custom Row Colors --- */
+    tbody tr:nth-child(odd) {
+      background-color: #e6f3ff !important; /* Light blue */
+    }
+    tbody tr:hover {
+      background-color: #d3d3d3 !important; /* Light grey */
+    }
   </style>
 </head>
 <body>
@@ -62,8 +70,8 @@
           <th>Company ↕</th>
           <th>DOB ↕</th>
           <th>Gender ↕</th>
-          <th>Image </th>
-          <th>Actions </th>
+          <th>Image</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -82,11 +90,10 @@
 <script type="module" src="script.js"></script>
 
 <script>
-  
 $(document).ready(function () {
   let deleteMode = false;
   let allEntries = [];
-  let filteredEntries = [];   // <--- Added filteredEntries
+  let filteredEntries = [];
   let currentPage = 1;
   const pageSize = 20;
 
@@ -125,13 +132,12 @@ $(document).ready(function () {
     $(".next, .last").prop("disabled", currentPage === totalPages);
   }
 
-  // Table sorter init
   $("#entryTable").tablesorter({
     theme: "bootstrap",
-    widgets: ["zebra", "stickyHeaders"],
+    widgets: ["stickyHeaders"],
     headers: {
-      8: { sorter: false },  // Disable sorting on Image column
-      9: { sorter: false }   // Disable sorting on Actions column
+      8: { sorter: false },
+      9: { sorter: false }
     },
     widgetOptions: {
       stickyHeaders: ''
@@ -141,28 +147,25 @@ $(document).ready(function () {
   $("#searchInput").on("keyup", function () {
     const query = $(this).val().toLowerCase();
 
-    if (!query) {
-      filteredEntries = allEntries; // no filter if empty search
-    } else {
-      filteredEntries = allEntries.filter(entry => {
-        const searchableText = [
-          entry.name,
-          entry.lastName,
-          entry.email,
-          entry.mobile,
-          entry.company,
-          entry.dob,
-          entry.gender
-        ].join(" ").toLowerCase();
+    filteredEntries = !query
+      ? allEntries
+      : allEntries.filter(entry => {
+          const searchableText = [
+            entry.name,
+            entry.lastName,
+            entry.email,
+            entry.mobile,
+            entry.company,
+            entry.dob,
+            entry.gender
+          ].join(" ").toLowerCase();
 
-        return searchableText.includes(query);
-      });
-    }
+          return searchableText.includes(query);
+        });
 
     currentPage = 1;
     renderTablePage(filteredEntries);
   });
-
 
   $("#toggleDeleteMode").on("click", function () {
     deleteMode = !deleteMode;
