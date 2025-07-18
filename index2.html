@@ -62,8 +62,8 @@
           <th>Company ↕</th>
           <th>DOB ↕</th>
           <th>Gender ↕</th>
-          <th>Image ↕</th>
-          <th>Actions ↕</th>
+          <th>Image </th>
+          <th>Actions </th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -125,12 +125,17 @@ $(document).ready(function () {
 
   // Table sorter init
   $("#entryTable").tablesorter({
-    theme: "bootstrap",
-    widgets: ["zebra", "stickyHeaders"],
-    widgetOptions: {
-      stickyHeaders: ''
-    }
-  });
+  theme: "bootstrap",
+  widgets: ["zebra", "stickyHeaders"],
+  headers: {
+    8: { sorter: false },  // Disable sorting on Image column
+    9: { sorter: false }   // Disable sorting on Actions column
+  },
+  widgetOptions: {
+    stickyHeaders: ''
+  }
+});
+
 
   $("#searchInput").on("keyup", function () {
     const query = $(this).val().toLowerCase();
