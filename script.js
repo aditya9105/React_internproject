@@ -45,14 +45,16 @@ window.listenToFirebase = (callback) => {
   });
 };
 
-window.confirmAndDelete = function (id) {
+window.confirmAndDelete = (id) => {
   if (confirm("Are you sure you want to delete this entry?")) {
     const dbRef = ref(database, `formResponses/${id}`);
     remove(dbRef)
+      .then(() => {
+        alert("✅ Entry deleted.");
+      })
       .catch(err => {
         console.error("❌", err);
         alert("❌ Failed to delete entry.");
       });
   }
 };
-
