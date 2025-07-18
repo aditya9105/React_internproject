@@ -82,9 +82,11 @@
 <script type="module" src="script.js"></script>
 
 <script>
+  
 $(document).ready(function () {
   let deleteMode = false;
   let allEntries = [];
+  let filteredEntries = [];   // <--- Added filteredEntries
   let currentPage = 1;
   const pageSize = 20;
 
@@ -117,7 +119,7 @@ $(document).ready(function () {
 
     $("#entryTable").trigger("update");
 
-    const totalPages = Math.ceil(entries.length / pageSize);
+    const totalPages = Math.ceil(entries.length / pageSize) || 1;
     $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
     $(".first, .prev").prop("disabled", currentPage === 1);
     $(".next, .last").prop("disabled", currentPage === totalPages);
@@ -125,39 +127,118 @@ $(document).ready(function () {
 
   // Table sorter init
   $("#entryTable").tablesorter({
-  theme: "bootstrap",
-  widgets: ["zebra", "stickyHeaders"],
-  headers: {
-    8: { sorter: false },  // Disable sorting on Image column
-    9: { sorter: false }   // Disable sorting on Actions column
-  },
-  widgetOptions: {
-    stickyHeaders: ''
-  }
-});
-
-
- $("#searchInput").on("keyup", function () {
-  const query = $(this).val().toLowerCase();
-
-  const filtered = allEntries.filter(entry => {
-    // Build a searchable string excluding the `id`
-    const searchableText = [
-      entry.name,
-      entry.lastName,
-      entry.email,
-      entry.mobile,
-      entry.company,
-      entry.dob,
-      entry.gender
-    ].join(" ").toLowerCase();
-
-    return searchableText.includes(query);
+    theme: "bootstrap",
+    widgets: ["zebra", "stickyHeaders"],
+    headers: {
+      8: { sorter: false },  // Disable sorting on Image column
+      9: { sorter: false }   // Disable sorting on Actions column
+    },
+    widgetOptions: {
+      stickyHeaders: ''
+    }
   });
 
-  currentPage = 1;
-  renderTablePage(filtered);
-});
+  $("#searchInput").on("keyup", function () {
+    const query = $(this).val().toLowerCase();
+
+    if (!query) {
+      filteredEntries = allEntries; // no filter if empty search
+    } else {
+      filteredEntries = allEntries.filter(entry => {
+        const searchableText = [
+          entry.name,
+          entry.lastName,
+          entry.email,
+          entry.mobile,
+          entry.company,
+          entry.dob,
+          entry.gender
+        ].join(" ").toLowerCase();
+
+        return searchableText.includes(query);
+      });
+    }
+
+    currentPage = 1;
+    renderTablePage(filteredEntries);
+  });
+
+// $(document).ready(function () {
+//   let deleteMode = false;
+//   let allEntries = [];
+//   let currentPage = 1;
+//   const pageSize = 20;
+
+//   function renderTablePage(entries) {
+//     const tbody = $("#entryTable tbody");
+//     tbody.empty();
+
+//     const start = (currentPage - 1) * pageSize;
+//     const pagedEntries = entries.slice(start, start + pageSize);
+
+//     pagedEntries.forEach(entry => {
+//       const row = $("<tr>");
+//       row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
+//       row.append(`<td>${entry.name}</td>`);
+//       row.append(`<td>${entry.lastName}</td>`);
+//       row.append(`<td>${entry.email}</td>`);
+//       row.append(`<td>${entry.mobile}</td>`);
+//       row.append(`<td>${entry.company}</td>`);
+//       row.append(`<td>${entry.dob}</td>`);
+//       row.append(`<td>${entry.gender}</td>`);
+//       row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
+//       row.append(`
+//         <td>
+//           <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
+//           <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
+//         </td>
+//       `);
+//       tbody.append(row);
+//     });
+
+//     $("#entryTable").trigger("update");
+
+//     const totalPages = Math.ceil(entries.length / pageSize);
+//     $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
+//     $(".first, .prev").prop("disabled", currentPage === 1);
+//     $(".next, .last").prop("disabled", currentPage === totalPages);
+//   }
+
+//   // Table sorter init
+//   $("#entryTable").tablesorter({
+//   theme: "bootstrap",
+//   widgets: ["zebra", "stickyHeaders"],
+//   headers: {
+//     8: { sorter: false },  // Disable sorting on Image column
+//     9: { sorter: false }   // Disable sorting on Actions column
+//   },
+//   widgetOptions: {
+//     stickyHeaders: ''
+//   }
+// });
+
+
+//  $("#searchInput").on("keyup", function () {
+//   const query = $(this).val().toLowerCase();
+
+//   const filtered = allEntries.filter(entry => {
+//     // Build a searchable string excluding the `id`
+//     const searchableText = [
+//       entry.name,
+//       entry.lastName,
+//       entry.email,
+//       entry.mobile,
+//       entry.company,
+//       entry.dob,
+//       entry.gender
+//     ].join(" ").toLowerCase();
+
+//     return searchableText.includes(query);
+//   });
+
+//   currentPage = 1;
+//   renderTablePage(filtered);
+// });
 
 
   $("#toggleDeleteMode").on("click", function () {
