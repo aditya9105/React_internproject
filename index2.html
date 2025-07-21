@@ -1,65 +1,117 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Saved Entries - TableSorter</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
-    <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
-    <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Saved Entries - TableSorter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 
-    <style>
-      body {
-        padding: 10px;
-      }
-      .img-thumb {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-      }
-      .compact-table {
-        font-size: 10px;
-        width: 100%;
-      }
-      .compact-table td, .compact-table th {
-        padding: 0.2rem;
-      }
-      .custom-charcoal {
-        background-color: #3b3f44;
-        color: #ffffff !important;
-        border: none;
-        transition: background-color 0.2s ease;
-      }
-      .custom-charcoal:hover,
-      .custom-charcoal:focus {
-        background-color: #2f3338;
-        color: #ffffff !important;
-      }
+  <style>
+    body {
+      padding: 10px;
+    }
+    .img-thumb {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+    }
+    .compact-table {
+      font-size: 10px;
+      width: 100%;
+      table-layout: fixed;
+    }
+    .compact-table th, .compact-table td {
+      padding: 0.2rem;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
 
-      tbody tr:nth-child(odd) {
-        background-color: #e6f3ff !important;
-      }
-      tbody tr:hover {
-        background-color: #d3d3d3 !important;
-      }
+    /* Specific column widths */
+    .compact-table th:nth-child(2),
+    .compact-table td:nth-child(2) {
+      width: 10%;
+    }
+    .compact-table th:nth-child(3),
+    .compact-table td:nth-child(3) {
+      width: 10%;
+    }
+    .compact-table th:nth-child(4),
+    .compact-table td:nth-child(4) {
+      width: 18%;
+    }
+    .compact-table th:nth-child(5),
+    .compact-table td:nth-child(5) {
+      width: 10%;
+    }
+    .compact-table th:nth-child(6),
+    .compact-table td:nth-child(6) {
+      width: 10%;
+    }
+    .compact-table th:nth-child(7),
+    .compact-table td:nth-child(7) {
+      width: 10%;
+    }
+    .compact-table th:nth-child(8),
+    .compact-table td:nth-child(8) {
+      width: 8%;
+    }
+    .compact-table th:nth-child(9),
+    .compact-table td:nth-child(9) {
+      width: 7%;
+    }
+    .compact-table th:nth-child(10),
+    .compact-table td:nth-child(10) {
+      width: 12%;
+    }
 
-      /* Full-width table wrapper */
-      .table-wrapper {
-        width: calc(100vw - 30px);
-        margin-left: calc(-50vw + 50%v + 15px);
-      }
-    </style>
-  </head>
-  <body>
-  <div class="container mt-4">
+    .custom-charcoal {
+      background-color: #3b3f44;
+      color: #ffffff !important;
+      border: none;
+      transition: background-color 0.2s ease;
+    }
+    .custom-charcoal:hover,
+    .custom-charcoal:focus {
+      background-color: #2f3338;
+      color: #ffffff !important;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #e6f3ff !important;
+    }
+    tbody tr:hover {
+      background-color: #d3d3d3 !important;
+    }
+
+    .table-wrapper {
+      width: calc(100vw - 30px);
+      margin-left: calc(-50vw + 50% + 15px);
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+    .top-bar {
+      margin-bottom: 8px;
+    }
+    .search-controls {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
     <h2>Saved Entries</h2>
-    <div class="mb-3">
-      <a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
+    <div class="top-bar">
+      <a href="index.html" class="btn btn-primary btn-sm">⬅ Back to Main Page</a>
     </div>
 
-    <div class="d-flex justify-content-between mb-2 flex-wrap">
+    <div class="d-flex justify-content-between align-items-center flex-wrap search-controls">
       <input type="text" id="searchInput" class="form-control w-25 mb-2" placeholder="🔍 Search...">
       <div>
         <button id="toggleDeleteMode" class="btn btn-sm custom-charcoal">Enable Delete Mode</button>
@@ -68,7 +120,6 @@
     </div>
   </div>
 
-  <!-- Full-width table section -->
   <div class="table-wrapper">
     <div class="table-responsive">
       <table id="entryTable" class="table table-bordered tablesorter compact-table">
@@ -131,7 +182,7 @@
         row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
         row.append(`
           <td>
-            <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
+            <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mb-1" title="Update">Update</a>
             <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
           </td>
         `);
@@ -231,5 +282,5 @@
     });
   });
   </script>
-  </body>
-  </html>
+</body>
+</html>
