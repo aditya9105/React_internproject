@@ -106,10 +106,12 @@ $(document).ready(function () {
       row.append(`<td>${entry.gender}</td>`);
       row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
       row.append(`
-        <td>
-          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mb-1" title="Update">Update</a>
-          <button class="btn btn-sm btn-danger single-delete" data-id="${entry.id}">Delete</button>
-        </td>
+           <td>
+  <div class="d-flex gap-2">
+    <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
+    <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
+  </div>
+</td>
       `);
       tbody.append(row);
     });
