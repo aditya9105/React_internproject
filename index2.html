@@ -1,235 +1,235 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Saved Entries - TableSorter</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
-  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
-  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Saved Entries - TableSorter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+    <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+    <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 
-  <style>
-    body {
-      padding: 10px;
-    }
-    .img-thumb {
-      width: 40px;
-      height: 40px;
-      object-fit: cover;
-    }
-    .compact-table {
-      font-size: 10px;
-      width: 100%;
-    }
-    .compact-table td, .compact-table th {
-      padding: 0.2rem;
-    }
-    .custom-charcoal {
-      background-color: #3b3f44;
-      color: #ffffff !important;
-      border: none;
-      transition: background-color 0.2s ease;
-    }
-    .custom-charcoal:hover,
-    .custom-charcoal:focus {
-      background-color: #2f3338;
-      color: #ffffff !important;
-    }
+    <style>
+      body {
+        padding: 10px;
+      }
+      .img-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+      }
+      .compact-table {
+        font-size: 10px;
+        width: 100%;
+      }
+      .compact-table td, .compact-table th {
+        padding: 0.2rem;
+      }
+      .custom-charcoal {
+        background-color: #3b3f44;
+        color: #ffffff !important;
+        border: none;
+        transition: background-color 0.2s ease;
+      }
+      .custom-charcoal:hover,
+      .custom-charcoal:focus {
+        background-color: #2f3338;
+        color: #ffffff !important;
+      }
 
-    tbody tr:nth-child(odd) {
-      background-color: #e6f3ff !important;
-    }
-    tbody tr:hover {
-      background-color: #d3d3d3 !important;
-    }
+      tbody tr:nth-child(odd) {
+        background-color: #e6f3ff !important;
+      }
+      tbody tr:hover {
+        background-color: #d3d3d3 !important;
+      }
 
-    /* Full-width table wrapper */
-    .table-wrapper {
-      width: calc(100vw - 30px);
-      margin-left: calc(-50vw + 50%v + 15px);
-    }
-  </style>
-</head>
-<body>
-<div class="container mt-4">
-  <h2>Saved Entries</h2>
-  <div class="mb-3">
-    <a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
-  </div>
+      /* Full-width table wrapper */
+      .table-wrapper {
+        width: calc(100vw - 30px);
+        margin-left: calc(-50vw + 50%v + 15px);
+      }
+    </style>
+  </head>
+  <body>
+  <div class="container mt-4">
+    <h2>Saved Entries</h2>
+    <div class="mb-3">
+      <a href="index.html" class="btn btn-primary">⬅ Back to Main Page</a>
+    </div>
 
-  <div class="d-flex justify-content-between mb-2 flex-wrap">
-    <input type="text" id="searchInput" class="form-control w-25 mb-2" placeholder="🔍 Search...">
-    <div>
-      <button id="toggleDeleteMode" class="btn btn-sm custom-charcoal">Enable Delete Mode</button>
-      <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
+    <div class="d-flex justify-content-between mb-2 flex-wrap">
+      <input type="text" id="searchInput" class="form-control w-25 mb-2" placeholder="🔍 Search...">
+      <div>
+        <button id="toggleDeleteMode" class="btn btn-sm custom-charcoal">Enable Delete Mode</button>
+        <button id="deleteSelected" class="btn btn-danger btn-sm d-none">Delete Selected</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Full-width table section -->
-<div class="table-wrapper">
-  <div class="table-responsive">
-    <table id="entryTable" class="table table-bordered tablesorter compact-table">
-      <thead class="thead-dark">
-        <tr>
-          <th class="delete-col d-none">Select</th>
-          <th>First Name ↕</th>
-          <th>Last Name ↕</th>
-          <th>Email ↕</th>
-          <th>Mobile ↕</th>
-          <th>Company ↕</th>
-          <th>DOB ↕</th>
-          <th>Gender ↕</th>
-          <th>Image</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <!-- Full-width table section -->
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table id="entryTable" class="table table-bordered tablesorter compact-table">
+        <thead class="thead-dark">
+          <tr>
+            <th class="delete-col d-none">Select</th>
+            <th>First Name ↕</th>
+            <th>Last Name ↕</th>
+            <th>Email ↕</th>
+            <th>Mobile ↕</th>
+            <th>Company ↕</th>
+            <th>DOB ↕</th>
+            <th>Gender ↕</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
-</div>
 
-<div class="container mt-2">
-  <div id="pager" class="pager">
-    <button class="btn btn-secondary btn-sm first">« First</button>
-    <button class="btn btn-secondary btn-sm prev">‹ Prev</button>
-    <span class="pagedisplay ml-2 mr-2"></span>
-    <button class="btn btn-secondary btn-sm next">Next ›</button>
-    <button class="btn btn-secondary btn-sm last">Last »</button>
+  <div class="container mt-2">
+    <div id="pager" class="pager">
+      <button class="btn btn-secondary btn-sm first">« First</button>
+      <button class="btn btn-secondary btn-sm prev">‹ Prev</button>
+      <span class="pagedisplay ml-2 mr-2"></span>
+      <button class="btn btn-secondary btn-sm next">Next ›</button>
+      <button class="btn btn-secondary btn-sm last">Last »</button>
+    </div>
   </div>
-</div>
 
-<script type="module" src="script.js"></script>
+  <script type="module" src="script.js"></script>
 
-<script>
-$(document).ready(function () {
-  let deleteMode = false;
-  let allEntries = [];
-  let filteredEntries = [];
-  let currentPage = 1;
-  const pageSize = 20;
+  <script>
+  $(document).ready(function () {
+    let deleteMode = false;
+    let allEntries = [];
+    let filteredEntries = [];
+    let currentPage = 1;
+    const pageSize = 20;
 
-  function renderTablePage(entries) {
-    const tbody = $("#entryTable tbody");
-    tbody.empty();
+    function renderTablePage(entries) {
+      const tbody = $("#entryTable tbody");
+      tbody.empty();
 
-    const start = (currentPage - 1) * pageSize;
-    const pagedEntries = entries.slice(start, start + pageSize);
+      const start = (currentPage - 1) * pageSize;
+      const pagedEntries = entries.slice(start, start + pageSize);
 
-    pagedEntries.forEach(entry => {
-      const row = $("<tr>");
-      row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
-      row.append(`<td>${entry.name}</td>`);
-      row.append(`<td>${entry.lastName}</td>`);
-      row.append(`<td>${entry.email}</td>`);
-      row.append(`<td>${entry.mobile}</td>`);
-      row.append(`<td>${entry.company}</td>`);
-      row.append(`<td>${entry.dob}</td>`);
-      row.append(`<td>${entry.gender}</td>`);
-      row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
-      row.append(`
-        <td>
-          <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
-          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
-        </td>
-      `);
-      tbody.append(row);
-    });
+      pagedEntries.forEach(entry => {
+        const row = $("<tr>");
+        row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
+        row.append(`<td>${entry.name}</td>`);
+        row.append(`<td>${entry.lastName}</td>`);
+        row.append(`<td>${entry.email}</td>`);
+        row.append(`<td>${entry.mobile}</td>`);
+        row.append(`<td>${entry.company}</td>`);
+        row.append(`<td>${entry.dob}</td>`);
+        row.append(`<td>${entry.gender}</td>`);
+        row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
+        row.append(`
+          <td>
+            <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
+            <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
+          </td>
+        `);
+        tbody.append(row);
+      });
 
-    $("#entryTable").trigger("update");
+      $("#entryTable").trigger("update");
 
-    const totalPages = Math.ceil(entries.length / pageSize) || 1;
-    $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
-    $(".first, .prev").prop("disabled", currentPage === 1);
-    $(".next, .last").prop("disabled", currentPage === totalPages);
-  }
-
-  $("#entryTable").tablesorter({
-    theme: "bootstrap",
-    widgets: ["stickyHeaders"],
-    headers: {
-      8: { sorter: false },
-      9: { sorter: false }
-    },
-    widgetOptions: {
-      stickyHeaders: ''
+      const totalPages = Math.ceil(entries.length / pageSize) || 1;
+      $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
+      $(".first, .prev").prop("disabled", currentPage === 1);
+      $(".next, .last").prop("disabled", currentPage === totalPages);
     }
-  });
 
-  $("#searchInput").on("keyup", function () {
-    const query = $(this).val().toLowerCase();
-
-    filteredEntries = !query
-      ? allEntries
-      : allEntries.filter(entry => {
-          const searchableText = [
-            entry.name,
-            entry.lastName,
-            entry.email,
-            entry.mobile,
-            entry.company,
-            entry.dob,
-            entry.gender
-          ].join(" ").toLowerCase();
-
-          return searchableText.includes(query);
-        });
-
-    currentPage = 1;
-    renderTablePage(filteredEntries);
-  });
-
-  $("#toggleDeleteMode").on("click", function () {
-    deleteMode = !deleteMode;
-    $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
-    $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
-  });
-
-  $("#deleteSelected").on("click", function () {
-    const ids = [];
-    $(".row-check:checked").each(function () {
-      ids.push($(this).data("id"));
+    $("#entryTable").tablesorter({
+      theme: "bootstrap",
+      widgets: ["stickyHeaders"],
+      headers: {
+        8: { sorter: false },
+        9: { sorter: false }
+      },
+      widgetOptions: {
+        stickyHeaders: ''
+      }
     });
 
-    if (ids.length === 0) return;
+    $("#searchInput").on("keyup", function () {
+      const query = $(this).val().toLowerCase();
 
-    ids.forEach(id => {
-      window.confirmAndDelete(id);
+      filteredEntries = !query
+        ? allEntries
+        : allEntries.filter(entry => {
+            const searchableText = [
+              entry.name,
+              entry.lastName,
+              entry.email,
+              entry.mobile,
+              entry.company,
+              entry.dob,
+              entry.gender
+            ].join(" ").toLowerCase();
+
+            return searchableText.includes(query);
+          });
+
+      currentPage = 1;
+      renderTablePage(filteredEntries);
     });
 
-    setTimeout(() => location.reload(), 1000);
-  });
+    $("#toggleDeleteMode").on("click", function () {
+      deleteMode = !deleteMode;
+      $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
+      $("#deleteSelected").toggleClass("d-none", !deleteMode);
+      $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
+    });
 
-  $(".first").on("click", function () {
-    currentPage = 1;
-    renderTablePage(allEntries);
-  });
+    $("#deleteSelected").on("click", function () {
+      const ids = [];
+      $(".row-check:checked").each(function () {
+        ids.push($(this).data("id"));
+      });
 
-  $(".prev").on("click", function () {
-    if (currentPage > 1) currentPage--;
-    renderTablePage(allEntries);
-  });
+      if (ids.length === 0) return;
 
-  $(".next").on("click", function () {
-    const totalPages = Math.ceil(allEntries.length / pageSize);
-    if (currentPage < totalPages) currentPage++;
-    renderTablePage(allEntries);
-  });
+      ids.forEach(id => {
+        window.confirmAndDelete(id);
+      });
 
-  $(".last").on("click", function () {
-    currentPage = Math.ceil(allEntries.length / pageSize);
-    renderTablePage(allEntries);
-  });
+      setTimeout(() => location.reload(), 1000);
+    });
 
-  window.listenToFirebase(entries => {
-    allEntries = entries;
-    currentPage = 1;
-    renderTablePage(allEntries);
+    $(".first").on("click", function () {
+      currentPage = 1;
+      renderTablePage(allEntries);
+    });
+
+    $(".prev").on("click", function () {
+      if (currentPage > 1) currentPage--;
+      renderTablePage(allEntries);
+    });
+
+    $(".next").on("click", function () {
+      const totalPages = Math.ceil(allEntries.length / pageSize);
+      if (currentPage < totalPages) currentPage++;
+      renderTablePage(allEntries);
+    });
+
+    $(".last").on("click", function () {
+      currentPage = Math.ceil(allEntries.length / pageSize);
+      renderTablePage(allEntries);
+    });
+
+    window.listenToFirebase(entries => {
+      allEntries = entries;
+      currentPage = 1;
+      renderTablePage(allEntries);
+    });
   });
-});
-</script>
-</body>
-</html>
+  </script>
+  </body>
+  </html>
