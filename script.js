@@ -59,27 +59,7 @@ window.confirmAndDelete = (id) => {
   }
 };
 
-window.bulkDeleteEntries = (ids) => {
-  if (ids.length === 0) return;
-  const confirmText = `Are you sure you want to delete ${ids.length} entries?`;
-  if (!confirm(confirmText)) return;
-
-  Promise.all(
-    ids.map(id => {
-      const dbRef = ref(database, `formResponses/${id}`);
-      return remove(dbRef);
-    })
-  )
-    .then(() => {
-      alert(`✅ ${ids.length} entries deleted.`);
-      location.reload();
-    })
-    .catch(err => {
-      console.error("❌ Bulk delete error:", err);
-      alert("❌ Failed to delete some entries.");
-    });
-};
-
+// Table rendering & pagination
 $(document).ready(function () {
   let deleteMode = false;
   let allEntries = [];
@@ -96,7 +76,7 @@ $(document).ready(function () {
 
     pagedEntries.forEach(entry => {
       const row = $("<tr>");
-      row.append(`<td class="delete-col ${deleteMode ? '' : 'd-none'}"><input type="checkbox" class="row-check" data-id="${entry.id}"></td>`);
+      row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
       row.append(`<td>${entry.name}</td>`);
       row.append(`<td>${entry.lastName}</td>`);
       row.append(`<td>${entry.email}</td>`);
@@ -106,12 +86,10 @@ $(document).ready(function () {
       row.append(`<td>${entry.gender}</td>`);
       row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
       row.append(`
-           <td>
-  <div class="d-flex gap-2">
-    <a href="index.html?id=${entry.id}" class="btn btn-sm btn-primary mr-1" title="Update">Update</a>
-    <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')" title="Delete">Delete</button>
-  </div>
-</td>
+        <td>
+          <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')">Delete</button>
+        </td>
       `);
       tbody.append(row);
     });
@@ -161,9 +139,9 @@ $(document).ready(function () {
 
   $("#toggleDeleteMode").on("click", function () {
     deleteMode = !deleteMode;
-    $(".delete-col").toggleClass("d-none", !deleteMode);
+    $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
     $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : "Enable Delete Mode");
+    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
   });
 
   $("#deleteSelected").on("click", function () {
@@ -172,16 +150,13 @@ $(document).ready(function () {
       ids.push($(this).data("id"));
     });
 
-    window.bulkDeleteEntries(ids);
-  });
+    if (ids.length === 0) return;
 
-  $(document).on("click", ".single-delete", function () {
-    const id = $(this).data("id");
-    window.confirmAndDelete(id);
-  });
+    ids.forEach(id => {
+      window.confirmAndDelete(id);
+    });
 
-  $("#selectAll").on("change", function () {
-    $(".row-check").prop("checked", this.checked);
+    setTimeout(() => location.reload(), 1000);
   });
 
   $(".first").on("click", function () {
