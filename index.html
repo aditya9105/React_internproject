@@ -1,4 +1,109 @@
+
 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Saved Entries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+<script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
+<style>
+.img-thumb { width: 40px; height: 40px; object-fit: cover; }
+.compact-table { font-size: 14px; width: 100%; table-layout: auto; }
+.compact-table thead th { font-size: 15px; font-weight: 400; }
+.compact-table th, .compact-table td { padding: 0.3rem; overflow-wrap: break-word; }
+.custom-charcoal { background-color: #3b3f44; color: #fff !important; border: none; }
+.custom-charcoal:hover, .custom-charcoal:focus { background-color: #2f3338; }
+tbody tr:nth-child(odd) { background-color: #e6f3ff !important; }
+tbody tr:hover { background-color: #d3d3d3 !important; }
+.table-wrappe { width: calc(100vw - 30px); margin-left: calc(-50vw + 50% + 15px); }
+.search-controls { margin-bottom: 10px; }
+.delete-col { width: 5%; }
+</style>
+</head>
+
+<body>
+<div class="container-fluid">
+<div class="table-wrappe">
+<h2>Saved Entries</h2>
+<div class="row search-controls">
+  <div class="col-md-6 d-flex flex-wrap align-items-center gap-2">
+    <button id="createEntryBtn" class="btn btn-sm custom-charcoal mr-2 mb-0">Create New Entry</button>
+    <button id="toggleDeleteMode" class="btn btn-sm custom-charcoal mr-2 mb-0">Enable Delete Mode</button>
+    <button id="deleteSelected" class="btn btn-danger btn-sm d-none mr-2 mb-0">Delete Selected</button>
+  </div>
+  <div class="col-md-6 text-right">
+    <input type="text" id="searchInput" class="form-control d-inline-block w-50 mb-2" placeholder="🔍 Search...">
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table id="entryTable" class="table table-bordered tablesorter compact-table">
+    <thead class="thead-dark">
+      <tr>
+       <th class="delete-col d-none"><input type="checkbox" id="selectAll" /></th>
+        <th>First Name ↕</th>
+        <th>Last Name ↕</th>
+        <th>Email ↕</th>
+        <th>Mobile ↕</th>
+        <th>Company ↕</th>
+        <th>DOB ↕</th>
+        <th>Gender ↕</th>
+        <th>Image</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="table-wrappe mt-2">
+<div id="pager" class="pager d-flex  margin-10px">
+  <button class="btn btn-secondary btn-sm first mx-1">« First</button>
+  <button class="btn btn-secondary btn-sm prev mx-1">‹ Prev</button>
+  <span class="pagedisplay ml-2 mr-2"></span>
+  <button class="btn btn-secondary btn-sm next mx-1">Next ›</button>
+  <button class="btn btn-secondary btn-sm last mx-1">Last »</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="entryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-body p-0">
+        <iframe id="entryFrame" src="" style="width:100%; height:90vh; border:none;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+
+<script>
+$(document).ready(function () {
+  $('#createEntryBtn').on('click', () => {
+    $('#entryFrame').attr('src', 'index2.html');
+    $('#entryModal').modal('show');
+  });
+  window.openUpdateModal = function(id) {
+    $('#entryFrame').attr('src', `index2.html?id=${id}`);
+    $('#entryModal').modal('show');
+  };
+});
+</script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -221,3 +326,4 @@ ReactDOM.render(<App/>, document.getElementById("root"));
 <script type="module" src="script.js"></script>
 </body>
 </html>
+ -->
