@@ -91,7 +91,8 @@ function App() {
         window.firebaseUpdate(window.firebaseRef(`formResponses/${currentId}`), userData)
           .then(() => {
             alert("✅ Data updated!");
-            window.location.href = "index2.html";
+            window.parent.location.reload();
+            window.parent.$('#entryModal').modal('hide');
           })
           .catch(err => {
             console.error("❌ Update failed", err);
@@ -102,7 +103,8 @@ function App() {
         window.firebaseSet(newRef, userData)
           .then(() => {
             alert("✅ Data saved!");
-            window.location.reload();
+            window.parent.location.reload();
+            window.parent.$('#entryModal').modal('hide');
           })
           .catch(err => {
             console.error("❌ Save failed", err);
@@ -111,12 +113,13 @@ function App() {
       }
     }, { onlyOnce: true });
   };
+
 const validateForm = () => {
   const isValid =
     form.name.trim() !== "" &&
     form.lastName.trim() !== "" &&
     form.email.trim() !== "" &&
-    form.mobile.trim().length === 10 && // stricter check for 10 digits
+    form.mobile.trim().length === 10 &&
     form.company.trim() !== "" &&
     form.dob.trim() !== "" &&
     form.gender.trim() !== "" &&
@@ -128,6 +131,7 @@ const validateForm = () => {
 
   return isValid;
 };
+
   const generatePDF = () => {
     if (!validateForm()) {
       alert("❌ Please fill in all fields and select an image before generating PDF.");
@@ -184,7 +188,6 @@ const validateForm = () => {
 
           <div className="d-flex justify-content-end mb-2">
             <button className="btn btn-success mr-2" onClick={generatePDF} disabled={!validateForm()}>Generate PDF</button>
-            <a href="index2.html" className="btn btn-info" target="_blank">View Database</a>
           </div>
 
           <div className="preview-box" id="preview">
