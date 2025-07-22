@@ -45,21 +45,23 @@ window.listenToFirebase = (callback) => {
   });
 };
 
-window.confirmAndDelete = (id) => {
-  if (confirm("Are you sure you want to delete this entry?")) {
-    const dbRef = ref(database, `formResponses/${id}`);
-    remove(dbRef)
-      .then(() => {
-        alert("✅ Entry deleted.");
-      })
-      .catch(err => {
-        console.error("❌", err);
-        alert("❌ Failed to delete entry.");
-      });
+window.confirmAndDelete = async (ids = []) => {
+  if (ids.length === 0) {
+    alert("⚠️ Please choose at least one entry to delete.");
+    return;
   }
+
+  if (!confirm(`Are you sure you want to delete ${ids.length} entries?`)) return;
+
+  const promises = ids.map(id => {
+    const dbRef = ref(database, `formResponses/${id}`);
+    return remove(dbRef);
+  });
+
+  await Promise.all(promises);
+  alert(`✅ ${ids.length} entries deleted.`);
 };
 
-// Table rendering & pagination
 $(document).ready(function () {
   let deleteMode = false;
   let allEntries = [];
@@ -88,7 +90,7 @@ $(document).ready(function () {
       row.append(`
         <td>
           <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
-          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete('${entry.id}')">Delete</button>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
         </td>
       `);
       tbody.append(row);
@@ -141,43 +143,63 @@ $(document).ready(function () {
     deleteMode = !deleteMode;
     $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
     $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this).text(deleteMode ? "❌ Cancel Delete Mode" : " Enable Delete Mode");
+    $(this)
+      .removeClass("btn-danger btn-secondary")
+      .addClass(deleteMode ? "btn-secondary" : "btn-danger")
+      .text(deleteMode ? "❌ Cancel Delete Mode" : "Enable Delete Mode");
+    $("#selectAll").prop("checked", false);
   });
 
-  $("#deleteSelected").on("click", function () {
-    const ids = [];
-    $(".row-check:checked").each(function () {
-      ids.push($(this).data("id"));
-    });
+  $("#selectAll").on("change", function () {
+    const isChecked = $(this).is(":checked");
+    $(".row-check").prop("checked", isChecked);
+  });
 
-    if (ids.length === 0) return;
+  $("#deleteSelected").on("click", async function () {
+    const ids = $(".row-check:checked").map(function () {
+      return $(this).data("id");
+    }).get();
 
-    ids.forEach(id => {
-      window.confirmAndDelete(id);
-    });
+    if (ids.length === 0) {
+      alert("⚠️ Please choose at least one entry to delete.");
+      return; // DO NOT exit delete mode
+    }
+
+    await window.confirmAndDelete(ids);
+
+    // Now exit delete mode AFTER deletion
+    deleteMode = false;
+    $(".delete-col, .row-check").addClass("d-none");
+    $("#deleteSelected").addClass("d-none");
+    $("#toggleDeleteMode")
+      .removeClass("btn-secondary")
+      .addClass("btn-danger")
+      .text("Enable Delete Mode");
+    $("#selectAll").prop("checked", false);
 
     setTimeout(() => location.reload(), 1000);
   });
 
+
   $(".first").on("click", function () {
     currentPage = 1;
-    renderTablePage(allEntries);
+    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
   $(".prev").on("click", function () {
     if (currentPage > 1) currentPage--;
-    renderTablePage(allEntries);
+    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
   $(".next").on("click", function () {
-    const totalPages = Math.ceil(allEntries.length / pageSize);
+    const totalPages = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
     if (currentPage < totalPages) currentPage++;
-    renderTablePage(allEntries);
+    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
   $(".last").on("click", function () {
-    currentPage = Math.ceil(allEntries.length / pageSize);
-    renderTablePage(allEntries);
+    currentPage = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
+    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
   window.listenToFirebase(entries => {
