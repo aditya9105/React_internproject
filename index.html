@@ -14,19 +14,35 @@
 
   <style>
     .img-thumb { width: 40px; height: 40px; object-fit: cover; }
-    .compact-table { font-size: 14px; width: 100%; table-layout: auto; }
+    .compact-table {
+      font-size: 14px;
+      width: 100%;
+      table-layout: fixed;
+    }
     .compact-table thead th { font-size: 15px; font-weight: 400; }
-    .compact-table th, .compact-table td { padding: 0.3rem; overflow-wrap: break-word; }
+    .compact-table th, .compact-table td {
+      padding: 0.3rem;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+    }
     .custom-charcoal { background-color: #3b3f44; color: #fff !important; border: none; }
     .custom-charcoal:hover, .custom-charcoal:focus { background-color: #2f3338; }
     tbody tr:nth-child(odd) { background-color: #e6f3ff !important; }
     tbody tr:hover { background-color: #d3d3d3 !important; }
     .table-wrappe { width: calc(100vw - 30px); margin-left: calc(-50vw + 50% + 15px); }
-    .search-controls { margin-bottom: 10px; }
+    .search-controls { margin: 20px 0; }
     .delete-col { width: 5%; }
     .modal-header .close { padding: 1rem; margin: -1rem -1rem -1rem auto; }
+
     @media (max-height: 800px) {
       .modal-body { height: 84vh !important; max-height: 84vh !important; }
+    }
+
+    th, td {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
@@ -34,22 +50,34 @@
 <body>
 <div class="container-fluid">
   <div class="table-wrappe">
-    <h2>Saved Entries</h2>
-    <div class="row search-controls">
-      <div class="col-md-6 d-flex flex-wrap align-items-center gap-2">
-        <button id="createEntryBtn" class="btn btn-sm btn-primary mr-2 mb-0">Create New Entry</button>
-        <button id="deleteSelected" class="btn btn-danger btn-sm mr-2 mb-0">Delete Selected</button>
+    <div class="row align-items-center search-controls">
+      <div class="col-md-6 d-flex flex-wrap align-items-center">
+        <h2 class="mb-0 mr-3">Saved Entries</h2>
+        <input type="text" id="searchInput" class="form-control w-50" placeholder="🔍 Search...">
       </div>
-      <div class="col-md-6 text-right">
-        <input type="text" id="searchInput" class="form-control d-inline-block w-50 mb-2" placeholder="🔍 Search...">
+      <div class="col-md-6 d-flex justify-content-end">
+        <button id="createEntryBtn" class="btn btn-sm btn-primary mr-2">Create New Entry</button>
+        <button id="deleteSelected" class="btn btn-danger btn-sm">Delete Selected</button>
       </div>
     </div>
 
     <div class="table-responsive">
       <table id="entryTable" class="table table-bordered tablesorter compact-table">
+        <colgroup>
+          <col style="width: 5%;">
+          <col style="width: 10%;">
+          <col style="width: 10%;">
+          <col style="width: 15%;">
+          <col style="width: 10%;">
+          <col style="width: 10%;">
+          <col style="width: 10%;">
+          <col style="width: 8%;">
+          <col style="width: 7%;">
+          <col style="width: 15%;">
+        </colgroup>
         <thead class="thead-dark">
           <tr>
-            <th class="delete-col"><input type="checkbox" id="selectAll" /></th>
+            <th><input type="checkbox" id="selectAll" /></th>
             <th>First Name ↕</th>
             <th>Last Name ↕</th>
             <th>Email ↕</th>
@@ -92,9 +120,7 @@
   </div>
 </div>
 
-<!-- Your Firebase + jQuery logic -->
 <script type="module" src="script.js"></script>
-
 <script>
   $(document).ready(function () {
     $('#createEntryBtn').on('click', () => {
@@ -107,7 +133,6 @@
       $('#entryModal').modal({ backdrop: true, keyboard: true });
     };
 
-    // Refresh + close modal on successful form submit (from iframe)
     window.addEventListener("message", (event) => {
       if (event.data === "refreshParent") {
         $('#entryModal').modal('hide');
@@ -116,6 +141,5 @@
     });
   });
 </script>
-
 </body>
 </html>
