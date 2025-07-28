@@ -1,134 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Entry Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Saved Entries</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://mottie.github.io/tablesorter/css/theme.bootstrap_4.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.js"></script>
+  <script src="https://mottie.github.io/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
   <style>
-    body { padding: 20px; }
+    .img-thumb { width: 40px; height: 40px; object-fit: cover; }
+    .compact-table { font-size: 14px; width: 100%; table-layout: auto; }
+    .compact-table thead th { font-size: 15px; font-weight: 400; }
+    .compact-table th, .compact-table td { padding: 0.3rem; overflow-wrap: break-word; }
+    .custom-charcoal { background-color: #3b3f44; color: #fff !important; border: none; }
+    .custom-charcoal:hover, .custom-charcoal:focus { background-color: #2f3338; }
+    tbody tr:nth-child(odd) { background-color: #e6f3ff !important; }
+    tbody tr:hover { background-color: #d3d3d3 !important; }
+    .table-wrappe { width: calc(100vw - 30px); margin-left: calc(-50vw + 50% + 15px); }
+    .search-controls { margin-bottom: 10px; }
+    .delete-col { width: 5%; }
+    .modal-header .close { padding: 1rem; margin: -1rem -1rem -1rem auto; }
+    @media (max-height: 800px) {
+      .modal-body { height: 84vh !important; max-height: 84vh !important; }
+    }
   </style>
 </head>
+
 <body>
-
-<div class="container">
-  <h2 id="form-title">Create Entry</h2>
-  <form id="entryForm">
-    <div class="form-group">
-      <label for="firstName">First Name</label>
-      <input type="text" class="form-control" id="firstName" required>
-    </div>
-    <div class="form-group">
-      <label for="lastName">Last Name</label>
-      <input type="text" class="form-control" id="lastName" required>
-    </div>
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" class="form-control" id="email" required>
-    </div>
-    <div class="form-group">
-      <label for="mobile">Mobile</label>
-      <input type="text" class="form-control" id="mobile" required>
-    </div>
-    <div class="form-group">
-      <label for="company">Company</label>
-      <input type="text" class="form-control" id="company">
-    </div>
-    <div class="form-group">
-      <label for="dob">DOB</label>
-      <input type="date" class="form-control" id="dob">
-    </div>
-    <div class="form-group">
-      <label for="gender">Gender</label>
-      <select class="form-control" id="gender">
-        <option>Male</option>
-        <option>Female</option>
-        <option>Other</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="selectedImage">Image URL</label>
-      <input type="url" class="form-control" id="selectedImage">
+<div class="container-fluid">
+  <div class="table-wrappe">
+    <h2>Saved Entries</h2>
+    <div class="row search-controls">
+      <div class="col-md-6 d-flex flex-wrap align-items-center gap-2">
+        <button id="createEntryBtn" class="btn btn-sm btn-primary mr-2 mb-0">Create New Entry</button>
+        <button id="deleteSelected" class="btn btn-danger btn-sm mr-2 mb-0">Delete Selected</button>
+      </div>
+      <div class="col-md-6 text-right">
+        <input type="text" id="searchInput" class="form-control d-inline-block w-50 mb-2" placeholder="🔍 Search...">
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-success">Submit</button>
-  </form>
+    <div class="table-responsive">
+      <table id="entryTable" class="table table-bordered tablesorter compact-table">
+        <thead class="thead-dark">
+          <tr>
+            <th class="delete-col"><input type="checkbox" id="selectAll" /></th>
+            <th>First Name ↕</th>
+            <th>Last Name ↕</th>
+            <th>Email ↕</th>
+            <th>Mobile ↕</th>
+            <th>Company ↕</th>
+            <th>DOB ↕</th>
+            <th>Gender ↕</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="table-wrappe mt-2">
+      <div id="pager" class="pager d-flex margin-10px">
+        <button class="btn btn-secondary btn-sm first mx-1">« First</button>
+        <button class="btn btn-secondary btn-sm prev mx-1">‹ Prev</button>
+        <span class="pagedisplay ml-2 mr-2"></span>
+        <button class="btn btn-secondary btn-sm next mx-1">Next ›</button>
+        <button class="btn btn-secondary btn-sm last mx-1">Last »</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Firebase + Logic -->
-<script type="module">
-  import {
-    initializeApp
-  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    update,
-    get
-  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+<!-- Modal -->
+<div class="modal fade" id="entryModal" tabindex="-1" role="dialog" data-backdrop="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Entry Form</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body p-0" style="height: 85vh; max-height: 85vh;">
+        <iframe id="entryFrame" src="" style="width:100%; height:100%; border:none;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDzH5UiDJNkVd4yoKGRon9AGqmSxkY0l90",
-    authDomain: "reactinternproject.firebaseapp.com",
-    databaseURL: "https://reactinternproject-default-rtdb.asia-southeast1.firebasedatabase.app/",
-    projectId: "reactinternproject",
-    storageBucket: "reactinternproject.appspot.com",
-    messagingSenderId: "12894491806",
-    appId: "1:12894491806:web:97fc439319fdbfcf8d578f"
-  };
+<!-- Your Firebase + jQuery logic -->
+<script type="module" src="script.js"></script>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  function getURLParameter(name) {
-    return new URLSearchParams(window.location.search).get(name);
-  }
-
-  const mode = getURLParameter("mode");
-  const entryId = getURLParameter("id");
-
-  if (mode === "update" && entryId) {
-    document.getElementById("form-title").textContent = "Update Entry";
-    const entryRef = ref(db, "formResponses/" + entryId);
-    get(entryRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        document.getElementById("firstName").value = data.name || "";
-        document.getElementById("lastName").value = data.lastName || "";
-        document.getElementById("email").value = data.email || "";
-        document.getElementById("mobile").value = data.mobile || "";
-        document.getElementById("company").value = data.company || "";
-        document.getElementById("dob").value = data.dob || "";
-        document.getElementById("gender").value = data.gender || "";
-        document.getElementById("selectedImage").value = data.selectedImage || "";
-      }
+<script>
+  $(document).ready(function () {
+    $('#createEntryBtn').on('click', () => {
+      $('#entryFrame').attr('src', 'index2.html?mode=create');
+      $('#entryModal').modal({ backdrop: true, keyboard: true });
     });
-  }
 
-  document.getElementById("entryForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = {
-      name: document.getElementById("firstName").value,
-      lastName: document.getElementById("lastName").value,
-      email: document.getElementById("email").value,
-      mobile: document.getElementById("mobile").value,
-      company: document.getElementById("company").value,
-      dob: document.getElementById("dob").value,
-      gender: document.getElementById("gender").value,
-      selectedImage: document.getElementById("selectedImage").value,
-      timestamp: Date.now()
+    window.openUpdateModal = function(id) {
+      $('#entryFrame').attr('src', `index2.html?mode=update&id=${id}`);
+      $('#entryModal').modal({ backdrop: true, keyboard: true });
     };
 
-    if (mode === "update" && entryId) {
-      await update(ref(db, "formResponses/" + entryId), formData);
-    } else {
-      await push(ref(db, "formResponses"), formData);
-    }
-
-    // ✅ Close modal + refresh parent page
-    window.parent.postMessage("refreshParent", "*");
+    // Refresh + close modal on successful form submit (from iframe)
+    window.addEventListener("message", (event) => {
+      if (event.data === "refreshParent") {
+        $('#entryModal').modal('hide');
+        setTimeout(() => location.reload(), 1000);
+      }
+    });
   });
 </script>
 
