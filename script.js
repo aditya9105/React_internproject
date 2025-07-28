@@ -60,6 +60,7 @@ window.confirmAndDelete = async (ids = []) => {
 
   await Promise.all(promises);
   alert(`✅ ${ids.length} entries deleted.`);
+  selectedIds.clear(); // Clear selection after deletion
 };
 
 $(document).ready(function () {
@@ -67,6 +68,7 @@ $(document).ready(function () {
   let filteredEntries = [];
   let currentPage = 1;
   const pageSize = 20;
+  const selectedIds = new Set(); // Track selected entries
 
   function renderTablePage(entries) {
     const tbody = $("#entryTable tbody");
@@ -76,8 +78,9 @@ $(document).ready(function () {
     const pagedEntries = entries.slice(start, start + pageSize);
 
     pagedEntries.forEach(entry => {
+      const isChecked = selectedIds.has(entry.id);
       const row = $("<tr>");
-      row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}"></td>`);
+      row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}></td>`);
       row.append(`<td>${entry.name}</td>`);
       row.append(`<td>${entry.lastName}</td>`);
       row.append(`<td>${entry.email}</td>`);
@@ -101,6 +104,14 @@ $(document).ready(function () {
     $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
     $(".first, .prev").prop("disabled", currentPage === 1);
     $(".next, .last").prop("disabled", currentPage === totalPages);
+
+    updateSelectAllCheckbox(); // Sync "Select All" checkbox state
+  }
+
+  function updateSelectAllCheckbox() {
+    const allIds = (filteredEntries.length ? filteredEntries : allEntries).map(e => e.id);
+    const allSelected = allIds.length > 0 && allIds.every(id => selectedIds.has(id));
+    $("#selectAll").prop("checked", allSelected);
   }
 
   $("#entryTable").tablesorter({
@@ -117,7 +128,6 @@ $(document).ready(function () {
 
   $("#searchInput").on("keyup", function () {
     const query = $(this).val().toLowerCase();
-
     filteredEntries = !query
       ? allEntries
       : allEntries.filter(entry => {
@@ -140,21 +150,33 @@ $(document).ready(function () {
 
   $("#selectAll").on("change", function () {
     const isChecked = $(this).is(":checked");
-    $(".row-check").prop("checked", isChecked);
+    const entriesToSelect = filteredEntries.length ? filteredEntries : allEntries;
+
+    if (isChecked) {
+      entriesToSelect.forEach(entry => selectedIds.add(entry.id));
+    } else {
+      entriesToSelect.forEach(entry => selectedIds.delete(entry.id));
+    }
+
+    renderTablePage(entriesToSelect);
   });
 
   $(document).on("change", ".row-check", function () {
-    const total = $(".row-check").length;
-    const checked = $(".row-check:checked").length;
-    $("#selectAll").prop("checked", total === checked);
+    const id = $(this).data("id");
+    if ($(this).is(":checked")) {
+      selectedIds.add(id);
+    } else {
+      selectedIds.delete(id);
+    }
+    updateSelectAllCheckbox();
   });
 
   $("#deleteSelected").on("click", async function () {
-    const ids = $(".row-check:checked").map(function () {
-      return $(this).data("id");
-    }).get();
-
-    await window.confirmAndDelete(ids);
+    if (selectedIds.size === 0) {
+      alert("⚠️ Please select at least one entry to delete.");
+      return;
+    }
+    await window.confirmAndDelete(Array.from(selectedIds));
     setTimeout(() => location.reload(), 1000);
   });
 
