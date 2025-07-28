@@ -1,4 +1,3 @@
-
 import {
   initializeApp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -64,7 +63,6 @@ window.confirmAndDelete = async (ids = []) => {
 };
 
 $(document).ready(function () {
-  let deleteMode = false;
   let allEntries = [];
   let filteredEntries = [];
   let currentPage = 1;
@@ -79,7 +77,7 @@ $(document).ready(function () {
 
     pagedEntries.forEach(entry => {
       const row = $("<tr>");
-      row.append(`<td class="delete-col d-none"><input type="checkbox" class="row-check d-none" data-id="${entry.id}"></td>`);
+      row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}"></td>`);
       row.append(`<td>${entry.name}</td>`);
       row.append(`<td>${entry.lastName}</td>`);
       row.append(`<td>${entry.email}</td>`);
@@ -140,17 +138,6 @@ $(document).ready(function () {
     renderTablePage(filteredEntries);
   });
 
-  $("#toggleDeleteMode").on("click", function () {
-    deleteMode = !deleteMode;
-    $(".delete-col, .row-check").toggleClass("d-none", !deleteMode);
-    $("#deleteSelected").toggleClass("d-none", !deleteMode);
-    $(this)
-      .removeClass("btn-danger btn-secondary")
-      .addClass(deleteMode ? "btn-secondary" : "btn-danger")
-      .text(deleteMode ? "❌ Cancel Delete Mode" : "Enable Delete Mode");
-    $("#selectAll").prop("checked", false);
-  });
-
   $("#selectAll").on("change", function () {
     const isChecked = $(this).is(":checked");
     $(".row-check").prop("checked", isChecked);
@@ -161,44 +148,27 @@ $(document).ready(function () {
       return $(this).data("id");
     }).get();
 
-    if (ids.length === 0) {
-      alert("⚠️ Please choose at least one entry to delete.");
-      return; // DO NOT exit delete mode
-    }
-
     await window.confirmAndDelete(ids);
-
-    // Now exit delete mode AFTER deletion
-    deleteMode = false;
-    $(".delete-col, .row-check").addClass("d-none");
-    $("#deleteSelected").addClass("d-none");
-    $("#toggleDeleteMode")
-      .removeClass("btn-secondary")
-      .addClass("btn-danger")
-      .text("Enable Delete Mode");
-    $("#selectAll").prop("checked", false);
-
-    setTimeout(() => location.reload(), 1000);
+    setTimeout(() => location.reload(), 1000); // Refresh after deletion
   });
 
-
-  $(".first").on("click", function () {
+  $(".first").on("click", () => {
     currentPage = 1;
     renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
-  $(".prev").on("click", function () {
+  $(".prev").on("click", () => {
     if (currentPage > 1) currentPage--;
     renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
-  $(".next").on("click", function () {
+  $(".next").on("click", () => {
     const totalPages = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
     if (currentPage < totalPages) currentPage++;
     renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
 
-  $(".last").on("click", function () {
+  $(".last").on("click", () => {
     currentPage = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
     renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   });
@@ -207,5 +177,13 @@ $(document).ready(function () {
     allEntries = entries;
     currentPage = 1;
     renderTablePage(allEntries);
+  });
+
+  // Handle message from iframe for refreshing and closing modal
+  window.addEventListener("message", function(event) {
+    if (event.data === "refreshParent") {
+      $("#entryModal").modal("hide");
+      setTimeout(() => location.reload(), 500);
+    }
   });
 });
