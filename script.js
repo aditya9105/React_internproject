@@ -143,13 +143,19 @@ $(document).ready(function () {
     $(".row-check").prop("checked", isChecked);
   });
 
+  $(document).on("change", ".row-check", function () {
+    const total = $(".row-check").length;
+    const checked = $(".row-check:checked").length;
+    $("#selectAll").prop("checked", total === checked);
+  });
+
   $("#deleteSelected").on("click", async function () {
     const ids = $(".row-check:checked").map(function () {
       return $(this).data("id");
     }).get();
 
     await window.confirmAndDelete(ids);
-    setTimeout(() => location.reload(), 1000); // Refresh after deletion
+    setTimeout(() => location.reload(), 1000);
   });
 
   $(".first").on("click", () => {
@@ -179,7 +185,6 @@ $(document).ready(function () {
     renderTablePage(allEntries);
   });
 
-  // Handle message from iframe for refreshing and closing modal
   window.addEventListener("message", function(event) {
     if (event.data === "refreshParent") {
       $("#entryModal").modal("hide");
