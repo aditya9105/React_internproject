@@ -13,133 +13,171 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
 
   <style>
-    .img-thumb { width: 40px; height: 40px; object-fit: cover; }
+    .img-thumb {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+    }
     .compact-table {
-      font-size: 14px;
+      font-size: 12px;
       width: 100%;
       table-layout: fixed;
     }
-    .compact-table thead th { font-size: 15px; font-weight: 400; }
-    .compact-table th, .compact-table td {
-      padding: 0.3rem;
+    .compact-table thead th {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .compact-table th,
+    .compact-table td {
+      padding: 0.2rem;
       overflow-wrap: break-word;
       word-wrap: break-word;
       word-break: break-word;
     }
-    .custom-charcoal { background-color: #3b3f44; color: #fff !important; border: none; }
-    .custom-charcoal:hover, .custom-charcoal:focus { background-color: #2f3338; }
-    tbody tr:nth-child(odd) { background-color: #e6f3ff !important; }
-    tbody tr:hover { background-color: #d3d3d3 !important; }
-    .table-wrappe { width: calc(100vw - 30px); margin-left: calc(-50vw + 50% + 15px); }
-    .search-controls { margin: 20px 0; }
-    .delete-col { width: 5%; }
-    .modal-header .close { padding: 1rem; margin: -1rem -1rem -1rem auto; }
-
-    @media (max-height: 800px) {
-      .modal-body { height: 84vh !important; max-height: 84vh !important; }
+    .custom-charcoal {
+      background-color: #3b3f44;
+      color: #fff !important;
+      border: none;
     }
-
+    .custom-charcoal:hover,
+    .custom-charcoal:focus {
+      background-color: #2f3338;
+    }
+    tbody tr:nth-child(odd) {
+      background-color: #e6f3ff !important;
+    }
+    tbody tr:hover {
+      background-color: #d3d3d3 !important;
+    }
+    .table-wrappe {
+      width: calc(100vw - 30px);
+      margin-left: calc(-50vw + 50% + 15px);
+    }
+    .search-controls {
+      margin: 15px 0;
+    }
+    .delete-col {
+      width: 4%;
+    }
     th, td {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .subject-scroll-cell {
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+    .subject-scroll-cell::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
+    }
+    @media (max-height: 800px) {
+      .modal-body {
+        height: 84vh !important;
+        max-height: 84vh !important;
+      }
+    }
   </style>
 </head>
 
 <body>
-<div class="container-fluid">
-  <div class="table-wrappe">
-    <div class="row align-items-center search-controls">
-      <div class="col-md-6 d-flex flex-wrap align-items-center">
-        <h2 class="mb-0 mr-3">Saved Entries</h2>
-        <input type="text" id="searchInput" class="form-control w-50" placeholder="🔍 Search...">
+  <div class="container-fluid">
+    <div class="table-wrappe">
+      <div class="row align-items-center search-controls">
+        <div class="col-md-6 d-flex flex-wrap align-items-center">
+          <h4 class="mb-0 mr-3">Saved Entries</h4>
+          <input type="text" id="searchInput" class="form-control w-50" placeholder="🔍 Search...">
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+          <button id="createEntryBtn" class="btn btn-sm btn-primary mr-2">Create New Entry</button>
+          <button id="deleteSelected" class="btn btn-danger btn-sm">Delete Selected</button>
+        </div>
       </div>
-      <div class="col-md-6 d-flex justify-content-end">
-        <button id="createEntryBtn" class="btn btn-sm btn-primary mr-2">Create New Entry</button>
-        <button id="deleteSelected" class="btn btn-danger btn-sm">Delete Selected</button>
-      </div>
-    </div>
 
-    <div class="table-responsive">
-      <table id="entryTable" class="table table-bordered tablesorter compact-table">
-        <colgroup>
-          <col style="width: 5%;">
-          <col style="width: 10%;">
-          <col style="width: 10%;">
-          <col style="width: 15%;">
-          <col style="width: 10%;">
-          <col style="width: 10%;">
-          <col style="width: 10%;">
-          <col style="width: 8%;">
-          <col style="width: 7%;">
-          <col style="width: 15%;">
-        </colgroup>
-        <thead class="thead-dark">
-          <tr>
-            <th><input type="checkbox" id="selectAll" /></th>
-            <th>First Name ↕</th>
-            <th>Last Name ↕</th>
-            <th>Email ↕</th>
-            <th>Mobile ↕</th>
-            <th>Company ↕</th>
-            <th>DOB ↕</th>
-            <th>Gender ↕</th>
-            <th>Image</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div class="table-wrappe mt-2">
-      <div id="pager" class="pager d-flex margin-10px">
-        <button class="btn btn-secondary btn-sm first mx-1">« First</button>
-        <button class="btn btn-secondary btn-sm prev mx-1">‹ Prev</button>
-        <span class="pagedisplay ml-2 mr-2"></span>
-        <button class="btn btn-secondary btn-sm next mx-1">Next ›</button>
-        <button class="btn btn-secondary btn-sm last mx-1">Last »</button>
+      <div class="table-responsive">
+        <table id="entryTable" class="table table-bordered tablesorter compact-table">
+          <colgroup>
+            <col style="width: 4%;">
+            <col style="width: 10%;">
+            <col style="width: 10%;">
+            <col style="width: 15%;">
+            <col style="width: 10%;">
+            <col style="width: 10%;">
+            <col style="width: 10%;">
+            <col style="width: 7%;">
+            <col style="width: 6%;">
+            <col style="width: 15%;">
+            <col style="width: 13%;">
+          </colgroup>
+          <thead class="thead-dark">
+            <tr>
+              <th><input type="checkbox" id="selectAll" /></th>
+              <th>First Name ↕</th>
+              <th>Last Name ↕</th>
+              <th>Email ↕</th>
+              <th>Mobile ↕</th>
+              <th>Company ↕</th>
+              <th>DOB ↕</th>
+              <th>Gender ↕</th>
+              <th>Image</th>
+              <th>Subjects</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- Modal -->
-<div class="modal fade" id="entryModal" tabindex="-1" role="dialog" data-backdrop="true">
-  <div class="modal-dialog modal-xl" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Entry Form</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body p-0" style="height: 85vh; max-height: 85vh;">
-        <iframe id="entryFrame" src="" style="width:100%; height:100%; border:none;"></iframe>
+      <div class="table-wrappe mt-2">
+        <div id="pager" class="pager d-flex margin-10px">
+          <button class="btn btn-secondary btn-sm first mx-1">« First</button>
+          <button class="btn btn-secondary btn-sm prev mx-1">‹ Prev</button>
+          <span class="pagedisplay ml-2 mr-2"></span>
+          <button class="btn btn-secondary btn-sm next mx-1">Next ›</button>
+          <button class="btn btn-secondary btn-sm last mx-1">Last »</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script type="module" src="script.js"></script>
-<script>
-  $(document).ready(function () {
-    $('#createEntryBtn').on('click', () => {
-      $('#entryFrame').attr('src', 'index2.html?mode=create');
-      $('#entryModal').modal({ backdrop: true, keyboard: true });
+  <!-- Modal -->
+  <div class="modal fade" id="entryModal" tabindex="-1" role="dialog" data-backdrop="true">
+    <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Entry Form</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body p-0" style="height: 85vh; max-height: 85vh;">
+          <iframe id="entryFrame" src="" style="width:100%; height:100%; border:none;"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#createEntryBtn').on('click', () => {
+        $('#entryFrame').attr('src', 'index2.html?mode=create');
+        $('#entryModal').modal({ backdrop: true, keyboard: true });
+      });
+
+      window.openUpdateModal = function(id) {
+        $('#entryFrame').attr('src', `index2.html?mode=update&id=${id}`);
+        $('#entryModal').modal({ backdrop: true, keyboard: true });
+      };
+
+      window.addEventListener("message", (event) => {
+        if (event.data === "refreshParent") {
+          $('#entryModal').modal('hide');
+          setTimeout(() => location.reload(), 1000);
+        }
+      });
     });
-
-    window.openUpdateModal = function(id) {
-      $('#entryFrame').attr('src', `index2.html?mode=update&id=${id}`);
-      $('#entryModal').modal({ backdrop: true, keyboard: true });
-    };
-
-    window.addEventListener("message", (event) => {
-      if (event.data === "refreshParent") {
-        $('#entryModal').modal('hide');
-        setTimeout(() => location.reload(), 1000);
-      }
-    });
-  });
-</script>
+  </script>
 </body>
 </html>
