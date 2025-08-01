@@ -92,6 +92,8 @@ function renderTablePage(entries) {
     row.append(`<td>${entry.dob}</td>`);
     row.append(`<td>${entry.gender}</td>`);
     row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
+    const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
+    row.append(`<td><div class="subject-scroll-cell">${subjects}</div></td>`);
     row.append(`
       <td>
         <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
@@ -123,7 +125,8 @@ $(document).ready(function () {
     widgets: ["stickyHeaders"],
     headers: {
       8: { sorter: false },
-      9: { sorter: false }
+      9: { sorter: false },
+      10: { sorter: false }
     },
     widgetOptions: {
       stickyHeaders: ''
