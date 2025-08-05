@@ -73,7 +73,46 @@ window.confirmAndDelete = async (ids = []) => {
   renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
 };
 
-function renderTablePage(entries) {
+// function renderTablePage(entries) {
+//   const tbody = $("#entryTable tbody");
+//   tbody.empty();
+
+//   const start = (currentPage - 1) * pageSize;
+//   const pagedEntries = entries.slice(start, start + pageSize);
+
+//   pagedEntries.forEach(entry => {
+//     const isChecked = selectedIds.has(entry.id);
+//     const row = $("<tr>");
+//     row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}></td>`);
+//     row.append(`<td>${entry.name}</td>`);
+//     row.append(`<td>${entry.lastName}</td>`);
+//     row.append(`<td>${entry.email}</td>`);
+//     row.append(`<td>${entry.mobile}</td>`);
+//     row.append(`<td>${entry.company}</td>`);
+//     row.append(`<td>${entry.dob}</td>`);
+//     row.append(`<td>${entry.gender}</td>`);
+//     row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
+//     const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
+//     row.append(`<td><div class="subject-scroll-cell">${subjects}</div></td>`);
+//     row.append(`
+//       <td>
+//         <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
+//         <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
+//       </td>
+//     `);
+//     tbody.append(row);
+//   });
+
+//   $("#entryTable").trigger("update");
+
+//   const totalPages = Math.ceil(entries.length / pageSize) || 1;
+//   $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
+//   $(".first, .prev").prop("disabled", currentPage === 1);
+//   $(".next, .last").prop("disabled", currentPage === totalPages);
+
+//   updateSelectAllCheckbox();
+// }
+export function renderTablePage(entries) {
   const tbody = $("#entryTable tbody");
   tbody.empty();
 
@@ -82,28 +121,34 @@ function renderTablePage(entries) {
 
   pagedEntries.forEach(entry => {
     const isChecked = selectedIds.has(entry.id);
-    const row = $("<tr>");
-    row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}></td>`);
-    row.append(`<td>${entry.name}</td>`);
-    row.append(`<td>${entry.lastName}</td>`);
-    row.append(`<td>${entry.email}</td>`);
-    row.append(`<td>${entry.mobile}</td>`);
-    row.append(`<td>${entry.company}</td>`);
-    row.append(`<td>${entry.dob}</td>`);
-    row.append(`<td>${entry.gender}</td>`);
-    row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
     const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
-    row.append(`<td><div class="subject-scroll-cell">${subjects}</div></td>`);
-    row.append(`
-      <td>
-        <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
-        <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
-      </td>
-    `);
-    tbody.append(row);
+
+    const rowHtml = `
+      <tr>
+        <td class="delete-col">
+          <input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}>
+        </td>
+        <td>${entry.name}</td>
+        <td>${entry.lastName}</td>
+        <td>${entry.email}</td>
+        <td>${entry.mobile}</td>
+        <td>${entry.company}</td>
+        <td>${entry.dob}</td>
+        <td>${entry.gender}</td>
+        <td><img src="${entry.selectedImage}" class="img-thumb" /></td>
+        <td><div class="subject-scroll-cell">${subjects}</div></td>
+        <td>
+          <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
+          <button class="btn btn-sm btn-danger" data-delete-id="${entry.id}">Delete</button>
+        </td>
+      </tr>
+    `;
+
+    tbody.append(rowHtml);
   });
 
   $("#entryTable").trigger("update");
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   const totalPages = Math.ceil(entries.length / pageSize) || 1;
   $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
@@ -112,7 +157,6 @@ function renderTablePage(entries) {
 
   updateSelectAllCheckbox();
 }
-
 function updateSelectAllCheckbox() {
   const entriesToCheck = filteredEntries.length ? filteredEntries : allEntries;
   const allSelected = entriesToCheck.length > 0 && entriesToCheck.every(entry => selectedIds.has(entry.id));
@@ -221,3 +265,4 @@ $(document).ready(function () {
     }
   });
 });
+
