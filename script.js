@@ -112,7 +112,7 @@ window.confirmAndDelete = async (ids = []) => {
 
 //   updateSelectAllCheckbox();
 // }
-export function renderTablePage(entries) {
+function renderTablePage(entries) {
   const tbody = $("#entryTable tbody");
   tbody.empty();
 
@@ -139,7 +139,7 @@ export function renderTablePage(entries) {
         <td><div class="subject-scroll-cell">${subjects}</div></td>
         <td>
           <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
-          <button class="btn btn-sm btn-danger" data-delete-id="${entry.id}">Delete</button>
+          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
         </td>
       </tr>
     `;
@@ -148,7 +148,6 @@ export function renderTablePage(entries) {
   });
 
   $("#entryTable").trigger("update");
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   const totalPages = Math.ceil(entries.length / pageSize) || 1;
   $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
@@ -157,6 +156,8 @@ export function renderTablePage(entries) {
 
   updateSelectAllCheckbox();
 }
+
+
 function updateSelectAllCheckbox() {
   const entriesToCheck = filteredEntries.length ? filteredEntries : allEntries;
   const allSelected = entriesToCheck.length > 0 && entriesToCheck.every(entry => selectedIds.has(entry.id));
@@ -265,4 +266,5 @@ $(document).ready(function () {
     }
   });
 });
+
 
