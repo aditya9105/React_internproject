@@ -158,19 +158,17 @@
     </div>
   </div>
 
-  <!-- load firebase + app script (module) -->
   <script type="module" src="script.js"></script>
 
   <script>
-    // UI wiring that uses the single AppService object (exposed as window.AppService)
-    // Only minor fixes here: template literals and usage of AppService (single global)
+
     $(document).ready(function () {
       $('#createEntryBtn').on('click', () => {
         $('#entryFrame').attr('src', 'index2.html?mode=create');
         $('#entryModal').modal({ backdrop: true, keyboard: true });
       });
 
-      // openUpdateModal needs to be accessible by buttons in table markup (they rely on global function)
+
       window.openUpdateModal = function(id) {
         $('#entryFrame').attr('src', `index2.html?mode=update&id=${id}`);
         $('#entryModal').modal({ backdrop: true, keyboard: true });
@@ -183,8 +181,9 @@
         }
       });
 
-      // all other UI interaction logic (search/pagination/delete) is handled inside script.js (module)
+
     });
   </script>
 </body>
 </html>
+
