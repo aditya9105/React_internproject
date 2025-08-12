@@ -1,6 +1,9 @@
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+// script.js (ES module)
+// This file initializes Firebase (modular) and exposes a single global object `AppService`
+// that groups helper functions and also runs the UI wiring for index.html (table, search, pagination).
+// It does not expose many separate window.firebase* functions — only one `AppService`.
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
   getDatabase,
   ref,
@@ -8,9 +11,11 @@ import {
   push,
   onValue,
   remove,
-  update
+  update,
+  get
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
+// ----------------- Firebase config (unchanged) -----------------
 const firebaseConfig = {
   apiKey: "AIzaSyDzH5UiDJNkVd4yoKGRon9AGqmSxkY0l90",
   authDomain: "reactinternproject.firebaseapp.com",
@@ -25,164 +30,248 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-window.firebaseRef = (path) => ref(database, path);
-window.firebaseSet = set;
-window.firebasePush = push;
-window.firebaseOnValue = onValue;
-window.firebaseRemove = remove;
-window.firebaseUpdate = update;
+// ----------------- AppService object (single global) -----------------
+const AppService = {
+  // basic refs and wrappers
+  ref: (path) => ref(database, path),
+  set: (dbRef, data) => set(dbRef, data),
+  push: (dbRef) => push(dbRef),
+  onValue: (dbRef, cb) => onValue(dbRef, cb),
+  remove: (dbRef) => remove(dbRef),
+  update: (dbRef, data) => update(dbRef, data),
+  getOnce: (dbRef) => get(dbRef),
 
-let allEntries = [];
-let filteredEntries = [];
-let currentPage = 1;
-const pageSize = 20;
-const selectedIds = new Set();
+  // helper to listen to "formResponses" and give parsed array
+  listenToFirebase: (callback) => {
+    const dbRef = ref(database, "formResponses");
+    onValue(dbRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const entries = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+      entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      callback(entries);
+    });
+  },
 
-window.listenToFirebase = (callback) => {
-  const dbRef = ref(database, "formResponses");
-  onValue(dbRef, (snapshot) => {
-    const data = snapshot.val() || {};
-    const entries = Object.entries(data).map(([id, value]) => ({
-      id,
-      ...value
-    }));
-    entries.sort((a, b) => b.timestamp - a.timestamp);
-    callback(entries);
-  });
-};
-
-window.confirmAndDelete = async (ids = []) => {
-  if (ids.length === 0) {
-    alert("⚠️ Please choose at least one entry to delete.");
-    return;
-  }
-
-  const confirmed = confirm(`Are you sure you want to delete ${ids.length} entries?`);
-  if (!confirmed) return;
-
-  const promises = ids.map(id => {
+  // convenience delete by id
+  deleteById: async (id) => {
     const dbRef = ref(database, `formResponses/${id}`);
     return remove(dbRef);
-  });
-
-  await Promise.all(promises);
-  ids.forEach(id => selectedIds.delete(id)); // Remove deleted IDs from selection
-  alert(`✅ ${ids.length} entries deleted.`);
-
-  // Refresh view without reloading
-  renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+  }
 };
 
-// function renderTablePage(entries) {
-//   const tbody = $("#entryTable tbody");
-//   tbody.empty();
+// expose one minimal global object (single property on window)
+window.AppService = AppService;
 
-//   const start = (currentPage - 1) * pageSize;
-//   const pagedEntries = entries.slice(start, start + pageSize);
+// ----------------- Table / UI logic (used by index.html) -----------------
+// We'll only set up the UI if the table exists on the page (so script can be reused in index2.html too)
+if (document.getElementById("entryTable")) {
+  // local state
+  let allEntries = [];
+  let filteredEntries = [];
+  let currentPage = 1;
+  const pageSize = 20;
+  const selectedIds = new Set();
 
-//   pagedEntries.forEach(entry => {
-//     const isChecked = selectedIds.has(entry.id);
-//     const row = $("<tr>");
-//     row.append(`<td class="delete-col"><input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}></td>`);
-//     row.append(`<td>${entry.name}</td>`);
-//     row.append(`<td>${entry.lastName}</td>`);
-//     row.append(`<td>${entry.email}</td>`);
-//     row.append(`<td>${entry.mobile}</td>`);
-//     row.append(`<td>${entry.company}</td>`);
-//     row.append(`<td>${entry.dob}</td>`);
-//     row.append(`<td>${entry.gender}</td>`);
-//     row.append(`<td><img src="${entry.selectedImage}" class="img-thumb"></td>`);
-//     const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
-//     row.append(`<td><div class="subject-scroll-cell">${subjects}</div></td>`);
-//     row.append(`
-//       <td>
-//         <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
-//         <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
-//       </td>
-//     `);
-//     tbody.append(row);
-//   });
+  function updateSelectAllCheckbox() {
+    const entriesToCheck = filteredEntries.length ? filteredEntries : allEntries;
+    const allSelected = entriesToCheck.length > 0 && entriesToCheck.every(entry => selectedIds.has(entry.id));
+    $("#selectAll").prop("checked", allSelected);
+  }
 
-//   $("#entryTable").trigger("update");
+  function renderTablePage(entries) {
+    const tbody = $("#entryTable tbody");
+    tbody.empty();
 
-//   const totalPages = Math.ceil(entries.length / pageSize) || 1;
-//   $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
-//   $(".first, .prev").prop("disabled", currentPage === 1);
-//   $(".next, .last").prop("disabled", currentPage === totalPages);
+    const start = (currentPage - 1) * pageSize;
+    const pagedEntries = entries.slice(start, start + pageSize);
 
-//   updateSelectAllCheckbox();
-// }
-function renderTablePage(entries) {
-  const tbody = $("#entryTable tbody");
-  tbody.empty();
+    pagedEntries.forEach(entry => {
+      const isChecked = selectedIds.has(entry.id);
+      const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
 
-  const start = (currentPage - 1) * pageSize;
-  const pagedEntries = entries.slice(start, start + pageSize);
+      const rowHtml = `
+        <tr>
+          <td class="delete-col">
+            <input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}>
+          </td>
+          <td>${escapeHtml(entry.name || "")}</td>
+          <td>${escapeHtml(entry.lastName || "")}</td>
+          <td>${escapeHtml(entry.email || "")}</td>
+          <td>${escapeHtml(entry.mobile || "")}</td>
+          <td>${escapeHtml(entry.company || "")}</td>
+          <td>${escapeHtml(entry.dob || "")}</td>
+          <td>${escapeHtml(entry.gender || "")}</td>
+          <td><img src="${escapeAttr(entry.selectedImage || '')}" class="img-thumb" /></td>
+          <td><div class="subject-scroll-cell">${escapeHtml(subjects)}</div></td>
+          <td>
+            <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
+            <button class="btn btn-sm btn-danger" onclick="confirmAndDelete(['${entry.id}'])">Delete</button>
+          </td>
+        </tr>
+      `;
 
-  pagedEntries.forEach(entry => {
-    const isChecked = selectedIds.has(entry.id);
-    const subjects = Array.isArray(entry.selectedSubjects) ? entry.selectedSubjects.join(", ") : "";
+      tbody.append(rowHtml);
+    });
 
-    const rowHtml = `
-      <tr>
-        <td class="delete-col">
-          <input type="checkbox" class="row-check" data-id="${entry.id}" ${isChecked ? 'checked' : ''}>
-        </td>
-        <td>${entry.name}</td>
-        <td>${entry.lastName}</td>
-        <td>${entry.email}</td>
-        <td>${entry.mobile}</td>
-        <td>${entry.company}</td>
-        <td>${entry.dob}</td>
-        <td>${entry.gender}</td>
-        <td><img src="${entry.selectedImage}" class="img-thumb" /></td>
-        <td><div class="subject-scroll-cell">${subjects}</div></td>
-        <td>
-          <button class="btn btn-sm btn-primary mr-1" onclick="openUpdateModal('${entry.id}')">Update</button>
-          <button class="btn btn-sm btn-danger" onclick="window.confirmAndDelete(['${entry.id}'])">Delete</button>
-        </td>
-      </tr>
-    `;
+    $("#entryTable").trigger("update");
 
-    tbody.append(rowHtml);
-  });
+    const totalPages = Math.ceil(entries.length / pageSize) || 1;
+    $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
+    $(".first, .prev").prop("disabled", currentPage === 1);
+    $(".next, .last").prop("disabled", currentPage === totalPages);
 
-  $("#entryTable").trigger("update");
+    updateSelectAllCheckbox();
+  }
 
-  const totalPages = Math.ceil(entries.length / pageSize) || 1;
-  $(".pagedisplay").text(`Page ${currentPage} of ${totalPages}`);
-  $(".first, .prev").prop("disabled", currentPage === 1);
-  $(".next, .last").prop("disabled", currentPage === totalPages);
+  // simple HTML escape helpers for safety
+  function escapeHtml(str = "") {
+    return String(str).replace(/[&<>"'`=\/]/g, function (s) {
+      return ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+      })[s];
+    });
+  }
+  function escapeAttr(str = "") {
+    return escapeHtml(str).replace(/"/g, '&quot;');
+  }
 
-  updateSelectAllCheckbox();
-}
-
-
-function updateSelectAllCheckbox() {
-  const entriesToCheck = filteredEntries.length ? filteredEntries : allEntries;
-  const allSelected = entriesToCheck.length > 0 && entriesToCheck.every(entry => selectedIds.has(entry.id));
-  $("#selectAll").prop("checked", allSelected);
-}
-
-$(document).ready(function () {
-  $("#entryTable").tablesorter({
-    theme: "bootstrap",
-    widgets: ["stickyHeaders"],
-    headers: {
-      8: { sorter: false },
-      9: { sorter: false },
-      10: { sorter: false }
-    },
-    widgetOptions: {
-      stickyHeaders: ''
+  async function confirmAndDelete(ids = []) {
+    if (ids.length === 0) {
+      alert("⚠️ Please choose at least one entry to delete.");
+      return;
     }
-  });
 
-  $("#searchInput").on("keyup", function () {
-    const query = $(this).val().toLowerCase();
-    filteredEntries = !query
-      ? allEntries
-      : allEntries.filter(entry => {
+    const confirmed = confirm(`Are you sure you want to delete ${ids.length} entries?`);
+    if (!confirmed) return;
+
+    const promises = ids.map(id => {
+      const dbRef = ref(database, `formResponses/${id}`);
+      return remove(dbRef);
+    });
+
+    await Promise.all(promises);
+    ids.forEach(id => selectedIds.delete(id));
+    alert(`✅ ${ids.length} entries deleted.`);
+
+    // refresh view without full reload: AppService listen will update allEntries
+    // but to be immediate, re-render using current arrays:
+    const entriesToRender = filteredEntries.length ? filteredEntries : allEntries;
+    // Remove deleted entries from arrays
+    allEntries = allEntries.filter(e => !ids.includes(e.id));
+    filteredEntries = filteredEntries.filter(e => !ids.includes(e.id));
+    // adjust current page if needed
+    const maxPages = Math.max(1, Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize));
+    if (currentPage > maxPages) currentPage = maxPages;
+    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+  }
+
+  // expose confirmAndDelete globally so inline onclick in generated rows can call it
+  window.confirmAndDelete = confirmAndDelete;
+
+  // wire up tablesorter
+  $(document).ready(function () {
+    $("#entryTable").tablesorter({
+      theme: "bootstrap",
+      widgets: ["stickyHeaders"],
+      headers: {
+        8: { sorter: false },
+        9: { sorter: false },
+        10: { sorter: false }
+      },
+      widgetOptions: {
+        stickyHeaders: ''
+      }
+    });
+
+    $("#searchInput").on("keyup", function () {
+      const query = $(this).val().toLowerCase();
+      filteredEntries = !query
+        ? allEntries
+        : allEntries.filter(entry => {
+            const searchableText = [
+              entry.name,
+              entry.lastName,
+              entry.email,
+              entry.mobile,
+              entry.company,
+              entry.dob,
+              entry.gender
+            ].join(" ").toLowerCase();
+
+            return searchableText.includes(query);
+          });
+
+      currentPage = 1;
+      renderTablePage(filteredEntries);
+    });
+
+    $("#selectAll").on("change", function () {
+      const isChecked = $(this).is(":checked");
+      const entriesToSelect = filteredEntries.length ? filteredEntries : allEntries;
+
+      if (isChecked) {
+        entriesToSelect.forEach(entry => selectedIds.add(entry.id));
+      } else {
+        entriesToSelect.forEach(entry => selectedIds.delete(entry.id));
+      }
+
+      renderTablePage(entriesToSelect);
+    });
+
+    $(document).on("change", ".row-check", function () {
+      const id = $(this).data("id");
+      if ($(this).is(":checked")) {
+        selectedIds.add(id);
+      } else {
+        selectedIds.delete(id);
+      }
+      updateSelectAllCheckbox();
+    });
+
+    $("#deleteSelected").on("click", async function () {
+      if (selectedIds.size === 0) {
+        alert("⚠️ Please select at least one entry to delete.");
+        return;
+      }
+
+      await confirmAndDelete(Array.from(selectedIds));
+    });
+
+    $(".first").on("click", () => {
+      currentPage = 1;
+      renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+    });
+
+    $(".prev").on("click", () => {
+      if (currentPage > 1) currentPage--;
+      renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+    });
+
+    $(".next").on("click", () => {
+      const totalPages = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
+      if (currentPage < totalPages) currentPage++;
+      renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+    });
+
+    $(".last").on("click", () => {
+      currentPage = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
+      renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
+    });
+
+    // listen for realtime updates
+    AppService.listenToFirebase(entries => {
+      allEntries = entries;
+      // if there is an active search query, reapply it
+      const q = $("#searchInput").val() ? $("#searchInput").val().toLowerCase() : "";
+      if (q) {
+        filteredEntries = allEntries.filter(entry => {
           const searchableText = [
             entry.name,
             entry.lastName,
@@ -192,80 +281,20 @@ $(document).ready(function () {
             entry.dob,
             entry.gender
           ].join(" ").toLowerCase();
-
-          return searchableText.includes(query);
+          return searchableText.includes(q);
         });
+      } else {
+        filteredEntries = entries;
+      }
+      currentPage = 1;
+      renderTablePage(filteredEntries);
+    });
 
-    currentPage = 1;
-    renderTablePage(filteredEntries);
+    window.addEventListener("message", function(event) {
+      if (event.data === "refreshParent") {
+        $("#entryModal").modal("hide");
+        setTimeout(() => location.reload(), 500);
+      }
+    });
   });
-
-  $("#selectAll").on("change", function () {
-    const isChecked = $(this).is(":checked");
-    const entriesToSelect = filteredEntries.length ? filteredEntries : allEntries;
-
-    if (isChecked) {
-      entriesToSelect.forEach(entry => selectedIds.add(entry.id));
-    } else {
-      entriesToSelect.forEach(entry => selectedIds.delete(entry.id));
-    }
-
-    renderTablePage(entriesToSelect);
-  });
-
-  $(document).on("change", ".row-check", function () {
-    const id = $(this).data("id");
-    if ($(this).is(":checked")) {
-      selectedIds.add(id);
-    } else {
-      selectedIds.delete(id);
-    }
-    updateSelectAllCheckbox();
-  });
-
-  $("#deleteSelected").on("click", async function () {
-    if (selectedIds.size === 0) {
-      alert("⚠️ Please select at least one entry to delete.");
-      return;
-    }
-
-    await window.confirmAndDelete(Array.from(selectedIds));
-  });
-
-  $(".first").on("click", () => {
-    currentPage = 1;
-    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
-  });
-
-  $(".prev").on("click", () => {
-    if (currentPage > 1) currentPage--;
-    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
-  });
-
-  $(".next").on("click", () => {
-    const totalPages = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
-    if (currentPage < totalPages) currentPage++;
-    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
-  });
-
-  $(".last").on("click", () => {
-    currentPage = Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize);
-    renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
-  });
-
-  window.listenToFirebase(entries => {
-    allEntries = entries;
-    currentPage = 1;
-    renderTablePage(allEntries);
-  });
-
-  window.addEventListener("message", function(event) {
-    if (event.data === "refreshParent") {
-      $("#entryModal").modal("hide");
-      setTimeout(() => location.reload(), 500);
-    }
-  });
-});
-
-
-
+}
