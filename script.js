@@ -1,8 +1,3 @@
-// script.js (ES module)
-// This file initializes Firebase (modular) and exposes a single global object `AppService`
-// that groups helper functions and also runs the UI wiring for index.html (table, search, pagination).
-// It does not expose many separate window.firebase* functions — only one `AppService`.
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
   getDatabase,
@@ -15,7 +10,7 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-// ----------------- Firebase config (unchanged) -----------------
+
 const firebaseConfig = {
   apiKey: "AIzaSyDzH5UiDJNkVd4yoKGRon9AGqmSxkY0l90",
   authDomain: "reactinternproject.firebaseapp.com",
@@ -30,9 +25,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// ----------------- AppService object (single global) -----------------
+
 const AppService = {
-  // basic refs and wrappers
+
   ref: (path) => ref(database, path),
   set: (dbRef, data) => set(dbRef, data),
   push: (dbRef) => push(dbRef),
@@ -41,7 +36,7 @@ const AppService = {
   update: (dbRef, data) => update(dbRef, data),
   getOnce: (dbRef) => get(dbRef),
 
-  // helper to listen to "formResponses" and give parsed array
+  
   listenToFirebase: (callback) => {
     const dbRef = ref(database, "formResponses");
     onValue(dbRef, (snapshot) => {
@@ -52,18 +47,17 @@ const AppService = {
     });
   },
 
-  // convenience delete by id
+  
   deleteById: async (id) => {
     const dbRef = ref(database, `formResponses/${id}`);
     return remove(dbRef);
   }
 };
 
-// expose one minimal global object (single property on window)
+
 window.AppService = AppService;
 
-// ----------------- Table / UI logic (used by index.html) -----------------
-// We'll only set up the UI if the table exists on the page (so script can be reused in index2.html too)
+
 if (document.getElementById("entryTable")) {
   // local state
   let allEntries = [];
@@ -123,7 +117,7 @@ if (document.getElementById("entryTable")) {
     updateSelectAllCheckbox();
   }
 
-  // simple HTML escape helpers for safety
+ 
   function escapeHtml(str = "") {
     return String(str).replace(/[&<>"'`=\/]/g, function (s) {
       return ({
@@ -160,22 +154,21 @@ if (document.getElementById("entryTable")) {
     ids.forEach(id => selectedIds.delete(id));
     alert(`✅ ${ids.length} entries deleted.`);
 
-    // refresh view without full reload: AppService listen will update allEntries
-    // but to be immediate, re-render using current arrays:
+
     const entriesToRender = filteredEntries.length ? filteredEntries : allEntries;
-    // Remove deleted entries from arrays
+ 
     allEntries = allEntries.filter(e => !ids.includes(e.id));
     filteredEntries = filteredEntries.filter(e => !ids.includes(e.id));
-    // adjust current page if needed
+
     const maxPages = Math.max(1, Math.ceil((filteredEntries.length ? filteredEntries : allEntries).length / pageSize));
     if (currentPage > maxPages) currentPage = maxPages;
     renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
   }
 
-  // expose confirmAndDelete globally so inline onclick in generated rows can call it
+
   window.confirmAndDelete = confirmAndDelete;
 
-  // wire up tablesorter
+
   $(document).ready(function () {
     $("#entryTable").tablesorter({
       theme: "bootstrap",
@@ -265,10 +258,10 @@ if (document.getElementById("entryTable")) {
       renderTablePage(filteredEntries.length ? filteredEntries : allEntries);
     });
 
-    // listen for realtime updates
+
     AppService.listenToFirebase(entries => {
       allEntries = entries;
-      // if there is an active search query, reapply it
+   
       const q = $("#searchInput").val() ? $("#searchInput").val().toLowerCase() : "";
       if (q) {
         filteredEntries = allEntries.filter(entry => {
@@ -298,3 +291,4 @@ if (document.getElementById("entryTable")) {
     });
   });
 }
+
