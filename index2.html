@@ -87,6 +87,9 @@
 <body>
   <div id="root"></div>
 
+  <!-- Make sure module script (script.js) is loaded so AppService is available -->
+  <script type="module" src="script.js"></script>
+
   <script type="text/babel">
     const { useState, useRef, useEffect } = React;
 
@@ -106,8 +109,9 @@
         if (modeParam) setMode(modeParam);
 
         if (id && modeParam === "update") {
-          const dbRef = window.firebaseRef(`formResponses/${id}`);
-          window.firebaseOnValue(dbRef, (snapshot) => {
+          // use AppService (single global object) to fetch entry once
+          const dbRef = AppService.ref(`formResponses/${id}`);
+          AppService.getOnce(dbRef).then(snapshot => {
             const data = snapshot.val();
             if (!data) return;
             setForm({
@@ -122,7 +126,9 @@
             setSelectedImage(data.selectedImage || "");
             setSelectedSubjects(Array.isArray(data.selectedSubjects) ? data.selectedSubjects : []);
             setCurrentId(id);
-          }, { onlyOnce: true });
+          }).catch(err => {
+            console.error("Error fetching entry:", err);
+          });
         }
       }, []);
 
@@ -145,8 +151,10 @@
         }
 
         const userData = { ...form, selectedImage, selectedSubjects, timestamp: Date.now() };
-        const dbRef = window.firebaseRef("formResponses");
-        window.firebaseOnValue(dbRef, (snapshot) => {
+
+        // check duplicate by reading current entries once
+        const dbRef = AppService.ref("formResponses");
+        AppService.getOnce(dbRef).then(snapshot => {
           const data = snapshot.val() || {};
           const entries = Object.entries(data).map(([id, value]) => ({ id, ...value }));
           const duplicate = entries.find(e => (e.email === userData.email || e.mobile === userData.mobile) && e.id !== currentId);
@@ -156,14 +164,14 @@
             return;
           }
 
-          const saveFn = currentId
-            ? () => window.firebaseUpdate(window.firebaseRef(`formResponses/${currentId}`), userData)
-            : () => {
-                const newRef = window.firebasePush(window.firebaseRef("formResponses"));
-                return window.firebaseSet(newRef, userData);
-              };
+          const savePromise = currentId
+            ? AppService.update(AppService.ref(`formResponses/${currentId}`), userData)
+            : (() => {
+                const newRef = AppService.push(AppService.ref("formResponses"));
+                return AppService.set(newRef, userData);
+              })();
 
-          saveFn()
+          savePromise
             .then(() => {
               alert("✅ Entry saved!");
               setForm({ name:"", lastName:"", email:"", mobile:"", company:"", dob:"", gender:"" });
@@ -178,7 +186,11 @@
               console.error("❌ Save failed", err);
               alert("❌ Failed to save.");
             });
-        }, { onlyOnce: true });
+
+        }).catch(err => {
+          console.error("Error reading entries:", err);
+          alert("❌ Failed to validate uniqueness.");
+        });
       };
 
       const validateForm = () => {
@@ -317,6 +329,7 @@
     ReactDOM.render(<App />, document.getElementById("root"));
   </script>
 
+  <!-- include script.js module too (already included above) -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
